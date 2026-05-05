@@ -1,0 +1,14 @@
+User-agent: *
+
+# Directories
+Disallow: /cgi-bin/
+Disallow: /images/
+Disallow: /css/
+Disallow: /js/
+Disallow: /jquery/
+Disallow: /api/
+Disallow: /databases/
+Disallow: /scripts/
+Disallow: /modules/
+
+Sitemap: https://www.edigamatchmaker.com/sitemap.xml

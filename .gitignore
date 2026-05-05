@@ -1,0 +1,11 @@
+# Ignore all node_modules directories
+node_modules/
+**/node_modules/
+
+# Ignore all vendor directories
+
+application/logs/
+application/cache/
+/application/sessions/
+uploads/
+*.zip

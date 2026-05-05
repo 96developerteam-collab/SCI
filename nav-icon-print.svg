@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+  <defs>
+    <style>
+      .cls-1, .cls-3 {
+        fill: none;
+      }
+
+      .cls-2 {
+        fill: #fff;
+      }
+
+      .cls-3 {
+        stroke: #fff;
+        stroke-linecap: round;
+        stroke-miterlimit: 10;
+        stroke-width: 1.5px;
+      }
+    </style>
+  </defs>
+  <g id="nav-icon-print" transform="translate(-5147 151)">
+    <rect id="Rectangle_55" data-name="Rectangle 55" class="cls-1" width="40" height="40" transform="translate(5147 -151)"/>
+    <g id="iconfinder_print_172530" transform="translate(5159 -139)">
+      <rect id="Rectangle_15" data-name="Rectangle 15" class="cls-1" width="16" height="16"/>
+      <circle id="Ellipse_2" data-name="Ellipse 2" class="cls-2" cx="0.64" cy="0.64" r="0.64" transform="translate(13.12 6.08)"/>
+      <path id="Path_1131" data-name="Path 1131" class="cls-3" d="M19.6,5.48V1H10V5.48" transform="translate(-6.8 -0.68)"/>
+      <path id="Path_1132" data-name="Path 1132" class="cls-3" d="M19.6,29v6.4H10V29Z" transform="translate(-6.8 -19.72)"/>
+      <path id="Path_1133" data-name="Path 1133" class="cls-3" d="M3.88,23H1.64A.64.64,0,0,1,1,22.36V15.64A.64.64,0,0,1,1.64,15H15.72a.64.64,0,0,1,.64.64v6.72a.64.64,0,0,1-.64.64H13.48" transform="translate(-0.68 -10.2)"/>
+    </g>
+  </g>
+</svg>

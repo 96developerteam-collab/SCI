@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+  <defs>
+    <style>
+      .cls-1, .cls-2 {
+        fill: none;
+      }
+
+      .cls-2 {
+        stroke: #fff;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2px;
+      }
+    </style>
+  </defs>
+  <g id="nav-icon-search" transform="translate(-5090 151)">
+    <rect id="Rectangle_54" data-name="Rectangle 54" class="cls-1" width="40" height="40" transform="translate(5090 -151)"/>
+    <g id="iconfinder_search_2561381" transform="translate(5099 -142)">
+      <circle id="Ellipse_1" data-name="Ellipse 1" class="cls-2" cx="6.667" cy="6.667" r="6.667" transform="translate(3 3)"/>
+      <line id="Line_1" data-name="Line 1" class="cls-2" x1="4.622" y1="4.622" transform="translate(14.378 14.378)"/>
+    </g>
+  </g>
+</svg>
