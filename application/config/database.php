@@ -62,19 +62,15 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $active_group = 'default';
 $query_builder = TRUE;
 
-if (isset($_SERVER['HTTP_HOST'])) {
-    $hostname = $_SERVER['HTTP_HOST'];
-} else {
-    $hostname = 'localhost'; // Default for CLI
-}
+$http_host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
 
-if ($hostname == 'localhost' || $hostname == '127.0.0.1') {
+if (strpos($http_host, 'localhost') !== false || $http_host == '127.0.0.1' || empty($http_host)) {
     // Local environment
     $db['default'] = array(
         'dsn'   => '',
-        'hostname' => 'localhost',
-        'username' => 'ztakzvxv_senior_user_award',
-        'password' => '1&c99?qDEfZH^e[&',
+        'hostname' => '127.0.0.1',
+        'username' => 'root',
+        'password' => '',
         'database' => 'ztakzvxv_senior_award_db',
         'dbdriver' => 'mysqli',
         'dbprefix' => '',
@@ -95,9 +91,9 @@ if ($hostname == 'localhost' || $hostname == '127.0.0.1') {
     // Production environment
     $db['default'] = array(
          'dsn'   => '',
-        'hostname' => 'localhost',
-        'username' => 'ztakzvxv_senior_user_award',
-        'password' => '1&c99?qDEfZH^e[&',
+        'hostname' => '127.0.0.1',
+        'username' => 'root',
+        'password' => '',
         'database' => 'ztakzvxv_senior_award_db',
         'dbdriver' => 'mysqli',
         'dbprefix' => '',
