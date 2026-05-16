@@ -14,10 +14,10 @@
                         </li>
 
                         <?php if ($this->Crud_model->admin_permission('area_legion')) { ?>
-                        <li <?php if($page_name=="area_legion") echo 'class="active-link"'; ?>>
-                            <a href="<?=base_url()?>admin/area_legion">
+                        <li <?php if($page_name=="legions") echo 'class="active-link"'; ?>>
+                            <a href="<?=base_url()?>admin/legions">
                                 <i class="fa fa-globe"></i>
-                                <span class="menu-title"><?php echo translate('area_&_legions')?></span>
+                                <span class="menu-title"><?php echo translate('legions')?></span>
                             </a>
                         </li>
                         <?php } ?>
@@ -98,6 +98,10 @@ $member_pages = array('free_members', 'premium_members', 'national_members', 'ng
         <?php 
         // DYNAMIC membership type links
         foreach ($membership_types as $membership) { 
+            // Skip Visitors and Guests sidebar items
+            if (in_array($membership->slug, ['free_members', 'guest_members'])) {
+                continue;
+            }
             if ($this->Crud_model->admin_permission($membership->slug)) { 
         ?>
         <li <?php if($page_name == $membership->slug) echo 'class="active-link"'; ?>>

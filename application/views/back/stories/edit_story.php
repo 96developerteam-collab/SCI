@@ -98,21 +98,24 @@ function convertDateFormat($date) {
                                 </label>
                                 <div class="col-sm-9">
                                     <input type="text" class="form-control" name="story_name" id="story_name" required 
-                                           value="<?= !empty($form_contents['story_name']) ? $form_contents['story_name'] : $get_story['title'] ?>">
+                                           value="<?= !empty($form_contents['story_name']) ? $form_contents['story_name'] : $get_story['title'] ?>"
+                                           style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()">
                                 </div>
                             </div>
                             
-                            <!-- Date -->
-                            <!-- <div class="form-group">
-                                <label class="col-sm-2 control-label" for="dated">
-                                    <b><?php echo translate('date')?></b><span class="text-danger">*</span>
-                                </label>
+                            <!-- Name -->
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label"><b>Name</b><span class="text-danger">*</span></label>
                                 <div class="col-sm-9">
-                                    <input type="date" class="form-control" name="dated" id="dated" required
-                                           value="<?= !empty($form_contents['dated']) ? $form_contents['dated'] : convertDateFormat($get_story['date']) ?>">
+                                    <input type="text" class="form-control" name="member_name" 
+                                           placeholder="Enter your role in SCI (e.g., President, Treasurer)"
+                                           value="<?= !empty($form_contents['member_name']) ? $form_contents['member_name'] : $get_story['member_name'] ?>" 
+                                           style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()" required>
+                                    <small class="text-muted">Enter your name followed by your role in SCI (e.g., John Doe - President)</small>
                                 </div>
-                            </div> -->
-                           <div class="form-group">
+                            </div>
+
+                            <div class="form-group">
     <label class="col-sm-2 control-label" for="dated">
         <b><?php echo translate('date')?></b><span class="text-danger">*</span>
     </label>
@@ -156,7 +159,8 @@ function convertDateFormat($date) {
                                 </label>
                                 <div class="col-sm-9">
                                     <input type="text" class="form-control" name="program_area" 
-                                           value="<?= !empty($form_contents['program_area']) ? $form_contents['program_area'] : $get_story['program_area'] ?>">
+                                           value="<?= !empty($form_contents['program_area']) ? $form_contents['program_area'] : $get_story['program_area'] ?>"
+                                           style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()">
                                 </div>
                             </div>
                             
@@ -168,8 +172,8 @@ function convertDateFormat($date) {
     <div class="col-sm-9">
         <input type="text" class="form-control" name="legion_name" 
                value="<?= !empty($form_contents['legion_name']) ? $form_contents['legion_name'] : $get_story['legion_name'] ?>"
-               readonly
-               style="background-color: transparent;">
+               style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()"
+               readonly>
     </div>
 </div>
 
@@ -181,8 +185,7 @@ function convertDateFormat($date) {
     <div class="col-sm-9">
         <input type="text" class="form-control" name="area_name" 
                value="<?= !empty($form_contents['area_name']) ? $form_contents['area_name'] : $get_story['area_name'] ?>"
-               readonly
-               style="background-color: transparent;">
+               style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()">
     </div>
 </div>
 

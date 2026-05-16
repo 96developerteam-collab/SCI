@@ -11,3 +11,5 @@ uploads/
 *.zip
 .qodo
 docs
+.agent
+graphify-out

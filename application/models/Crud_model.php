@@ -47,35 +47,23 @@ public function update_story($id, $data)
 
 
     public function get_legion_and_area_by_admin($admin_id)
-{
-    log_message('debug', 'Method invoked: get_legion_and_area_by_admin | Admin ID: ' . $admin_id);
-    
-    // Check for areas
-    $this->db->select('area_id');
-    $this->db->from('admin_area');
-    $this->db->where('admin_id', $admin_id);
-    $areas = $this->db->get()->result_array();
-    $area_ids = array_column($areas, 'area_id');
+    {
+        $this->db->select('admin.legion_id, legions.name as legion_name');
+        $this->db->from('admin');
+        $this->db->join('legions', 'admin.legion_id = legions.id', 'left');
+        $this->db->where('admin.admin_id', $admin_id);
+        $res = $this->db->get()->row_array();
 
-    // Check for legions
-    $this->db->select('legion_id');
-    $this->db->from('admin_legion');
-    $this->db->where('admin_id', $admin_id);
-    $legions = $this->db->get()->result_array();
-    $legion_ids = array_column($legions, 'legion_id');
+        $status = !empty($res['legion_id']);
 
-    // Prepare legacy return structure for compatibility with Admin controller
-    $legion_id = !empty($legion_ids) ? $legion_ids[0] : 0;
-    $status = !empty($legion_ids);
-
-    return [
-        'status' => $status,
-        'legion_id' => $legion_id,
-        'area_ids' => $area_ids,
-        'legion_ids' => $legion_ids,
-        'message' => $status ? '' : 'No legion assigned'
-    ];
-}
+        return [
+            'status' => $status,
+            'legion_id' => $res['legion_id'] ?? 0,
+            'legion_name' => $res['legion_name'] ?? '',
+            'area_name' => '', // Stored as text in story, but no longer linked to an area_id
+            'message' => $status ? '' : 'No legion assigned'
+        ];
+    }
 
 public function get_members_by_admin_access($admin_id) {
     
@@ -135,6 +123,15 @@ public function get_members_by_admin_access($admin_id) {
                         ->get()
                         ->result_array();
     }
+
+    public function get_all_legions()
+    {
+        return $this->db->select('id, name, prefix')
+                        ->from('legions')
+                        ->order_by('name', 'ASC')
+                        ->get()
+                        ->result_array();
+    }
     
 
     
@@ -180,13 +177,7 @@ public function get_areas_with_legions() {
     // In Crud_model.php
         public function get_all_areas()
         {
-
-            
-            return $this->db->select('id, name')
-                            ->from('areas')
-                            ->order_by('name', 'ASC')
-                            ->get()
-                            ->result_array();
+            return []; // Areas table dropped, returning empty array
         }
 
 
@@ -1168,7 +1159,7 @@ public function insert_legion($data) {
         return $result;
     }
 
-    function alldata_count($table)
+    function alldata_count($table, $where_clause = [], $additional_filters = [])
     {
         if(!empty($this->session->userdata('earning_status'))){
             $state = $this->session->userdata('earning_status');
@@ -1176,6 +1167,17 @@ public function insert_legion($data) {
                 $this->db->where($table.'.payment_status', $state);
             }
         }
+        
+        // Apply where clause if provided
+        if (!empty($where_clause) && is_array($where_clause)) {
+            $this->db->where($where_clause);
+        }
+        
+        // Apply additional filters if provided
+        if (!empty($additional_filters) && is_array($additional_filters)) {
+            $this->db->where($additional_filters);
+        }
+        
         $query = $this->db->get($table);
         return $query->num_rows();
     }
@@ -1244,6 +1246,9 @@ public function insert_legion($data) {
                     $this->db->not_like('profile_image', '"profile_image":"female_default.png"');
                 }           
             }
+            if(!empty($this->session->userdata('free_member_since')) && $this->session->userdata('free_member_since') != 'all'){
+                $this->db->like('member_since', $this->session->userdata('free_member_since'));
+            }
            
         }
         else if(!empty($this->session->userdata('premium_member_status_type')) && $membership == 2){
@@ -1267,7 +1272,10 @@ public function insert_legion($data) {
                     $this->db->not_like('profile_image', '"profile_image":"male_default.jpg"');
                     $this->db->not_like('profile_image', '"profile_image":"female_default.png"');
                 }           
+            if(!empty($this->session->userdata('premium_member_since')) && $this->session->userdata('premium_member_since') != 'all'){
+                $this->db->like('member_since', $this->session->userdata('premium_member_since'));
             }
+        }
         
         $query = $this->db->get_where("member", array("membership" => $membership))->result();
         return count($query);
@@ -1366,6 +1374,9 @@ public function insert_legion($data) {
                     $this->db->not_like('profile_image', 'female_default.png');
                 }
             }
+            if(!empty($this->session->userdata('free_member_since')) && $this->session->userdata('free_member_since') != 'all'){
+                $this->db->like('member_since', $this->session->userdata('free_member_since'));
+            }
     
         } else if (!empty($this->session->userdata('premium_member_status_type')) && $member_type == 2) {
             if ($this->session->userdata('premium_member_status_type') == 'groom') {
@@ -1387,6 +1398,9 @@ public function insert_legion($data) {
                     $this->db->not_like('profile_image', 'male_default.jpg');
                     $this->db->not_like('profile_image', 'female_default.png');
                 }
+            }
+            if(!empty($this->session->userdata('premium_member_since')) && $this->session->userdata('premium_member_since') != 'all'){
+                $this->db->like('member_since', $this->session->userdata('premium_member_since'));
             }
         }
     
@@ -1589,6 +1603,9 @@ public function insert_legion($data) {
                     $this->db->not_like('profile_image', '"profile_image":"female_default.png"');
                 }           
             }
+            if(!empty($this->session->userdata('free_member_since')) && $this->session->userdata('free_member_since') != 'all'){
+                $this->db->like('member_since', $this->session->userdata('free_member_since'));
+            }
         }
         else if(!empty($this->session->userdata('premium_member_status_type')) && $membership == 2){
             if($this->session->userdata('premium_member_status_type') == 'groom'){
@@ -1610,6 +1627,9 @@ public function insert_legion($data) {
                     $this->db->not_like('profile_image', '"profile_image":"male_default.jpg"');
                     $this->db->not_like('profile_image', '"profile_image":"female_default.png"');
                 }           
+            }
+            if(!empty($this->session->userdata('premium_member_since')) && $this->session->userdata('premium_member_since') != 'all'){
+                $this->db->like('member_since', $this->session->userdata('premium_member_since'));
             }
         }
         
@@ -1650,6 +1670,9 @@ public function insert_legion($data) {
                     $this->db->not_like('profile_image', '"profile_image":"female_default.png"');
                 }           
             }
+            if(!empty($this->session->userdata('free_member_since')) && $this->session->userdata('free_member_since') != 'all'){
+                $this->db->like('member_since', $this->session->userdata('free_member_since'));
+            }
         }
         else if(!empty($this->session->userdata('premium_member_status_type')) && $membership == 2){
             if($this->session->userdata('premium_member_status_type') == 'groom'){
@@ -1671,6 +1694,9 @@ public function insert_legion($data) {
                     $this->db->not_like('profile_image', '"profile_image":"male_default.jpg"');
                     $this->db->not_like('profile_image', '"profile_image":"female_default.png"');
                 }           
+            }
+            if(!empty($this->session->userdata('premium_member_since')) && $this->session->userdata('premium_member_since') != 'all'){
+                $this->db->like('member_since', $this->session->userdata('premium_member_since'));
             }
         }
         
@@ -2072,7 +2098,7 @@ function earning_search($table,$limit,$start,$search,$col,$dir)
         return $query->num_rows();
     }
 
-    function allstories($table, $limit, $start, $col, $dir)
+    function allstories($table, $limit, $start, $col, $dir, $additional_filters = [])
     {
         $this->db->select(
             $table . '.' . $table . '_id, ' . 
@@ -2087,6 +2113,12 @@ function earning_search($table,$limit,$start,$search,$col,$dir)
     
         $this->db->from($table);
         $this->db->join('member', 'member.member_id = '.$table.'.posted_by', 'left');
+        
+        // Apply additional filters if provided
+        if (!empty($additional_filters) && is_array($additional_filters)) {
+            $this->db->where($additional_filters);
+        }
+        
         $this->db->limit($limit, $start)->order_by($col, $dir);
         $query = $this->db->get();
     
@@ -2100,11 +2132,17 @@ function earning_search($table,$limit,$start,$search,$col,$dir)
         }
     }
     
-    function story_search($table,$limit,$start,$search,$col,$dir)
+    function story_search($table,$limit,$start,$search,$col,$dir, $additional_filters = [])
     {
         $this->db->select(''.$table.'.'.$table.'_id, '.$table.'.title, '.$table.'.image, '.$table.'.approval_status, '.$table.'.post_time,'. $table.'.partner_name, member.first_name AS member_name', FALSE);
         $this->db->from($table);
         $this->db->join('member', 'member.member_id = '.$table.'.posted_by', 'left');
+        
+        // Apply additional filters if provided
+        if (!empty($additional_filters) && is_array($additional_filters)) {
+            $this->db->where($additional_filters);
+        }
+        
         $this->db->like($table.'_id',$search)->or_like($table.'.title',$search)->or_like($table.'.partner_name',$search)->or_like('member.first_name',$search)->limit($limit,$start)->order_by($col,$dir);
         $query = $this->db->get();
 
@@ -2118,11 +2156,17 @@ function earning_search($table,$limit,$start,$search,$col,$dir)
         }
     }
 
-    function story_search_count($table,$search)
+    function story_search_count($table,$search, $additional_filters = [])
     {
         $this->db->select(''.$table.'.'.$table.'_id, '.$table.'.title, '.$table.'.image, '.$table.'.approval_status, '.$table.'.post_time,'. $table.'.partner_name, member.first_name AS member_name', FALSE);
         $this->db->from($table);
         $this->db->join('member', 'member.member_id = '.$table.'.posted_by', 'left');
+        
+        // Apply additional filters if provided
+        if (!empty($additional_filters) && is_array($additional_filters)) {
+            $this->db->where($additional_filters);
+        }
+        
         $this->db->like($table.'_id',$search)->or_like($table.'.title',$search)->or_like($table.'.partner_name',$search)->or_like('member.first_name',$search);
         $query = $this->db->get();
 

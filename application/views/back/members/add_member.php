@@ -157,30 +157,35 @@
 							</select>
 						</div>
 					</div>
+					
+					<!-- MEMBER SINCE -->
+					<div class="form-group">
+						<label class="col-sm-3 control-label custom-label"><?= translate('member_since') ?> *</label>
+						<div class="col-sm-8">
+							<select name="member_since" class="form-control selectpicker" required>
+								<option value=""><?= translate('select_year') ?></option>
+								<?php 
+									$current_year = date('Y');
+									for ($i = $current_year; $i >= 1975; $i--) {
+										echo '<option value="'.$i.'">'.$i.'</option>';
+									}
+								?>
+							</select>
+						</div>
+					</div>
 
-
-                <!-- AREA -->
-                <div class="form-group">
-                    <label class="col-sm-3 control-label custom-label">Area *</label>
-                    <div class="col-sm-8">
-                        <select id="area" name="area_id" class="form-control" onchange="getLegions(this.value); setAreaName(this);">
-                            <option value="">Select Area</option>
-                            <?php foreach ($areas as $area): ?>
-                                <option value="<?= $area['id'] ?>" <?= ($area['id'] == $selected_area) ? 'selected' : '' ?>>
-                                    <?= $area['name'] ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <input type="hidden" name="area" id="area_name">
-                    </div>
-                </div>
 
                 <!-- LEGION -->
                 <div class="form-group">
                     <label class="col-sm-3 control-label custom-label">Legion *</label>
                     <div class="col-sm-8">
-                        <select id="legion" name="legion_id" class="form-control" onchange="setLegionName(this);">
+                        <select id="legion" name="legion_id" class="form-control selectpicker" data-live-search="true" required onchange="setLegionName(this);">
                             <option value="">Select Legion</option>
+                            <?php foreach ($legions as $legion): ?>
+                                <option value="<?= $legion['id'] ?>">
+                                    <?= $legion['name'] ?> (<?= $legion['prefix'] ?>)
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                         <input type="hidden" name="legion" id="legion_name">
                     </div>

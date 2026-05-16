@@ -25,37 +25,62 @@
                             <!-- Legion Selection -->
                            
 
-                            <!-- President Name -->
+                            <?php $role = $this->session->userdata('role_id'); ?>
+
+                            <!-- Name -->
                             <div class="form-group">
-                                <label class="col-sm-2 control-label"><b>President Name</b><span class="text-danger">*</span></label>
+                                <label class="col-sm-2 control-label"><b>Name</b><span class="text-danger">*</span></label>
                                 <div class="col-sm-8">
-                                    <input type="text" class="form-control" id="president_name" name="president_name" value="<?= htmlspecialchars(isset($legion['admin_name']) ? $legion['admin_name'] : '') ?>" required readonly>
+                                    <input type="text" class="form-control" id="president_name" name="president_name" 
+                                           placeholder="Enter your name"
+                                           value="" style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()" required>
                                     <?php if (isset($this->session->flashdata('failed')['president_name'])): ?>
                                         <span class="text-danger"><?= $this->session->flashdata('failed')['president_name']; ?></span>
                                     <?php endif; ?>
                                 </div>
                             </div>
 
+                            <!-- Designation (Only for Role 3) -->
+                            <?php if($role == 3): ?>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label"><b>Designation</b><span class="text-danger">*</span></label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" name="designation" 
+                                           style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()" required>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+
                             <!-- Area -->
                             <div class="form-group">
                                 <label class="col-sm-2 control-label"><b>Area</b><span class="text-danger">*</span></label>
                                 <div class="col-sm-8">
-                                    <input type="text" class="form-control" id="area" name="area" value="<?= htmlspecialchars(isset($legion['area_name']) ? $legion['area_name'] : '') ?>" required readonly>
-                                    <?php if (isset($this->session->flashdata('failed')['area'])): ?>
-                                        <span class="text-danger"><?= $this->session->flashdata('failed')['area']; ?></span>
-                                    <?php endif; ?>
-                                </div>
+                                    <input type="text" class="form-control" id="area_name" name="area_name" value="<?= htmlspecialchars(isset($legion['area_name']) ? $legion['area_name'] : '') ?>" style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()" required>
+                                    <?php if (isset($this->session->flashdata('failed')['area_name'])): ?>
+                                         <span class="text-danger"><?= $this->session->flashdata('failed')['area_name']; ?></span>
+                                     <?php endif; ?>
+                                 </div>
                             </div>
-
+ 
                             <!-- Legion Name -->
                             <div class="form-group">
                                 <label class="col-sm-2 control-label"><b>Legion Name</b><span class="text-danger">*</span></label>
                                 <div class="col-sm-8">
-                                    <input type="text" class="form-control" id="legion_name" name="legion_name" value="<?= htmlspecialchars(isset($legion['legion_name']) ? $legion['legion_name'] : '') ?>" required readonly>
-                                    <?php if (isset($this->session->flashdata('failed')['legion_name'])): ?>
-                                        <span class="text-danger"><?= $this->session->flashdata('failed')['legion_name']; ?></span>
+                                    <?php if($role == 3 && isset($all_legions)): ?>
+                                        <select name="legion_name" class="form-control" required style="text-transform: uppercase;">
+                                            <option value=""><?php echo translate('select_legion'); ?></option>
+                                            <?php foreach($all_legions as $l): ?>
+                                                <option value="<?php echo $l['name']; ?>"><?php echo $l['name']; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    <?php else: ?>
+                                        <input type="text" class="form-control" id="legion_name" name="legion_name" value="<?= htmlspecialchars(isset($legion['legion_name']) ? $legion['legion_name'] : '') ?>" style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()" required readonly>
                                     <?php endif; ?>
-                                </div>
+                                    
+                                    <?php if (isset($this->session->flashdata('failed')['legion_name'])): ?>
+                                         <span class="text-danger"><?= $this->session->flashdata('failed')['legion_name']; ?></span>
+                                     <?php endif; ?>
+                                 </div>
                             </div>
 
                             <!-- Date -->
@@ -88,7 +113,7 @@
                             <div class="form-group">
                                 <label class="col-sm-2 control-label"><b>Program Name</b><span class="text-danger">*</span></label>
                                 <div class="col-sm-8">
-                                    <input type="text" class="form-control" id="program_name" name="program_name" required>
+                                    <input type="text" class="form-control" id="program_name" name="program_name" style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()" required>
                                     <?php if (isset($this->session->flashdata('failed')['program_name'])): ?>
                                         <span class="text-danger"><?= $this->session->flashdata('failed')['program_name']; ?></span>
                                     <?php endif; ?>
@@ -99,7 +124,7 @@
                             <div class="form-group">
                                 <label class="col-sm-2 control-label"><b>Program Area</b><span class="text-danger">*</span></label>
                                 <div class="col-sm-8">
-                                    <input type="text" class="form-control" id="program_area" name="program_area" required>
+                                    <input type="text" class="form-control" id="program_area" name="program_area" style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()" required>
                                     <?php if (isset($this->session->flashdata('failed')['program_area'])): ?>
                                         <span class="text-danger"><?= $this->session->flashdata('failed')['program_area']; ?></span>
                                     <?php endif; ?>
@@ -162,8 +187,8 @@ function fillLegionDetails() {
     const select = document.getElementById('legion_id');
     const selectedOption = select.options[select.selectedIndex];
     document.getElementById('legion_name').value = selectedOption.getAttribute('data-legion-name') || '';
-    document.getElementById('president_name').value = selectedOption.getAttribute('data-president-name') || '';
-    document.getElementById('area').value = selectedOption.getAttribute('data-area') || '';
+    // document.getElementById('president_name').value = selectedOption.getAttribute('data-president-name') || '';
+    document.getElementById('area_name').value = selectedOption.getAttribute('data-area') || '';
 }
 
 // Client-side file validation

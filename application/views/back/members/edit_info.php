@@ -202,30 +202,6 @@
                   <div class="col-md-12">
 
       <div class="row">
-    <!-- Area Field -->
-    <div class="col-md-6">
-      <div class="form-group has-feedback">
-        <label for="area" class="text-uppercase c-gray-light">
-          <?php echo translate('area') ?>  
-        </label>
-
-        <select id="area" name="area_id" class="form-control" onchange="getLegions(this.value); setAreaName(this);">
-  <option value="">Select Area</option>
-  <?php foreach($areas as $area): ?>
-    <option value="<?= $area['id'] ?>" <?= isset($selected_area) && $selected_area == $area['id'] ? 'selected' : '' ?>>
-      <?= $area['name'] ?>
-    </option>
-  <?php endforeach; ?>
-</select>
-<input type="hidden" name="area" id="area_name" value="<?= isset($selected_area_name) ? $selected_area_name : '' ?>">
-
-
-
-        <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
-        <div class="help-block with-errors"></div>
-      </div>
-    </div>
-
     <!-- Legion Field -->
     <div class="col-md-6">
       <div class="form-group has-feedback">
@@ -233,18 +209,15 @@
           <?php echo translate('legion') ?> 
         </label>
 
-
-
-        <select id="legion" name="legion_id" class="form-control" onchange="setLegionName(this);">
-  <option value="">Select Legion</option>
-  <?php foreach($legions as $legion): ?>
-    <option value="<?= $legion['id'] ?>" <?= isset($selected_legion) && $selected_legion == $legion['id'] ? 'selected' : '' ?>>
-      <?= $legion['name'] ?>
-    </option>
-  <?php endforeach; ?>
-</select>
-<input type="hidden" name="legion" id="legion_name" value="<?= isset($selected_legion_name) ? $selected_legion_name : '' ?>">
-
+        <select id="legion" name="legion_id" class="form-control selectpicker" data-live-search="true" required onchange="setLegionName(this);">
+          <option value="">Select Legion</option>
+          <?php foreach($legions as $legion): ?>
+            <option value="<?= $legion['id'] ?>" <?= isset($selected_legion) && $selected_legion == $legion['id'] ? 'selected' : '' ?>>
+              <?= $legion['name'] ?> (<?= $legion['prefix'] ?>)
+            </option>
+          <?php endforeach; ?>
+        </select>
+        <input type="hidden" name="legion" id="legion_name" value="<?= isset($selected_legion_name) ? $selected_legion_name : '' ?>">
 
         <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
         <div class="help-block with-errors"></div>

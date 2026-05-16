@@ -125,7 +125,12 @@ class Home extends CI_Controller {
             $page_data['premium_members'] = $this->db->order_by('rand()')->get_where('member', $array_data , $max_premium_member_num)->result();
         }
 
-        $page_data['happy_stories'] = $this->db->get_where('happy_story', array('approval_status' => 1), $max_story_num)->result();
+        $role_id = $this->session->userdata('role_id');
+        if ($role_id == 3) {
+            $page_data['happy_stories'] = $this->db->get_where('happy_story', array('approval_status' => 1, 'admin_id' => $this->session->userdata('admin_id')), $max_story_num)->result();
+        } else {
+            $page_data['happy_stories'] = $this->db->get_where('happy_story', array('approval_status' => 1), $max_story_num)->result();
+        }
         $plans = $this->db->get("plan")->result();
         foreach ($plans as $plan) {
             $plan->total_amount = $plan->amount + ($plan->amount * $plan->gst / 100);
@@ -4790,41 +4795,14 @@ if ($para1 == "add") {
 
 
     private function get_registration_form_data() {
-        $data['areas'] = $this->db->get('areas')->result();
-        $first_area_id = !empty($data['areas']) ? $data['areas'][0]->id : 0;
-        $data['first_area_id'] = $first_area_id;
-    
-        if ($first_area_id) {
-            $this->db->where('area_id', $first_area_id);
-            $data['legions'] = $this->db->get('legions')->result();
-        } else {
-            $data['legions'] = [];
-        }
+        $data['legions'] = $this->db->get('legions')->result();
     
         // 🔥 Log the $data array
         log_message('debug', 'Registration Form Data: ' . print_r($data, true));
     
         return $data;
     }
-    
-    
-    public function get_legions() {
-        log_message('info', 'Method get_legions() invoked via AJAX');
-    
-        $area_id = $this->input->post('area_id');
-        log_message('info', 'Area ID received: ' . $area_id);
-    
-        if ($area_id) {
-            $this->db->where('area_id', $area_id);
-            $legions = $this->db->get('legions')->result();
-            log_message('info', 'Legions fetched for area_id ' . $area_id . ': ' . print_r($legions, true));
-    
-            echo json_encode($legions);
-        } else {
-            log_message('info', 'No area_id received. Returning empty array.');
-            echo json_encode([]);
-        }
-    }
+
   
     function registration($para1="")
     {
@@ -5276,10 +5254,8 @@ if ($para1 == "add") {
                             $data['privacy_status'] = $privacy_status;
                             $data['pic_privacy'] = $data_pic_privacy;
                             $data['report_profile'] = '[]';
-                            $data['area'] = $this->input->post('area');     // area name from form
                             $data['legion'] = $this->input->post('legion'); // legion name from form
-                            $data['area_id'] = $this->input->post('area_id');       // ID (foreign key)
-                            $data['legion_id'] = $this->input->post('legion_id');   
+                            $data['legion_id'] = $this->input->post('legion_id');
                             
 
                             $this->db->insert('member', $data);

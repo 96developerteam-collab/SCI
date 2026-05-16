@@ -190,79 +190,33 @@
                   </div>
                     
                   <div class="row">
-<!-- Area Dropdown -->
-        <div class="col-md-6">
-            <div class="form-group">
-                <label class="control-label font_light"><?php echo translate('area')?></label>
-              <!-- Area Dropdown -->
-       <!-- Area Dropdown -->
-<select class="form-control form-control-sm" name="area" id="area" required>
-    <option value="">-- Select Area --</option>
-    <?php foreach($areas as $area): ?>
-        <option value="<?php echo $area->name; ?>" data-id="<?php echo $area->id; ?>">
-            <?php echo $area->name; ?>
-        </option>
-    <?php endforeach; ?>
-</select>
-<!-- Hidden input to store selected area_id -->
-<input type="hidden" name="area_id" id="area_id">
-
-
-            </div>
-        </div>
-
 <!-- Legion Dropdown -->
-<div class="col-md-6">
+<div class="col-md-12">
     <div class="form-group">
         <label class="control-label font_light"><?php echo translate('legion')?></label>
-      <select class="form-control form-control-sm" name="legion" id="legion" required>
-    <option value="">-- Select Legion --</option>
-</select>
-<!-- Hidden input to store selected legion_id -->
-<input type="hidden" name="legion_id" id="legion_id">
-
+        <select class="form-control form-control-sm" name="legion" id="legion" required>
+            <option value="">-- Select Legion --</option>
+            <?php if (isset($legions) && !empty($legions)): ?>
+                <?php foreach($legions as $legion): ?>
+                    <option value="<?php echo htmlspecialchars($legion->name); ?>" data-id="<?php echo $legion->id; ?>">
+                        <?php echo htmlspecialchars($legion->prefix ?? '') . ' - ' . htmlspecialchars($legion->name); ?>
+                    </option>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </select>
+        <!-- Hidden input to store selected legion_id -->
+        <input type="hidden" name="legion_id" id="legion_id">
     </div>
 </div>
 
-
-</div>
 <script>
 $(document).ready(function(){
-    $('#area').on('change', function() {
-        const areaName = $(this).val();
-        const areaId = $('#area option:selected').data('id');
-        $('#area_id').val(areaId); // set hidden field
-
-        if(areaId) {
-            $.ajax({
-                url: '<?php echo base_url('home/get_legions'); ?>',
-                method: 'POST',
-                data: { area_id: areaId },
-                dataType: 'json',
-                success: function(response) {
-                    $('#legion').empty().append('<option value="">-- Select Legion --</option>');
-
-                    if(response.length > 0) {
-                        $.each(response, function(index, legion) {
-                            $('#legion').append(
-                                '<option value="'+ legion.name +'" data-id="'+ legion.id +'">'+ legion.name +'</option>'
-                            );
-                        });
-                    } else {
-                        $('#legion').append('<option value="">-- No legions available --</option>');
-                    }
-                }
-            });
-        }
-    });
-
     // Capture legion_id when user selects a legion
     $('#legion').on('change', function() {
         const legionId = $('#legion option:selected').data('id');
         $('#legion_id').val(legionId); // set hidden field
     });
 });
-
 </script>
 
 

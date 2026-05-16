@@ -43,22 +43,11 @@ $story_data = $this->db->select('*')->from('happy_story')->where('approval_statu
                 <h3 class="panel-title"><?php echo translate('Projects_list')?></h3>
             </div>
 
-            <?php
-            $allowed_roles = [1, 2, 7, 8, 9];
-            $current_user_role_id = $this->session->userdata('role_id');
-            ?>
-
-            <?php if (in_array($current_user_role_id, $allowed_roles)): ?>
-                <div class="text-right mb-3">
-                    <a href="<?= base_url() ?>admin/stories/add_story" class="btn btn-primary add-tooltip" data-toggle="tooltip" title="<?php echo translate('add_new_project')?>">
-                        <i class="fa fa-plus"></i> <?php echo translate('add_new_project')?>
-                    </a>
-                </div>
-            <?php else: ?>
-                <div class="text-right mb-3">
-                    <p class="text-muted"><?php echo translate('no_permission_to_add_project')?></p>
-                </div>
-            <?php endif; ?>
+            <div class="text-right mb-3">
+                <a href="<?= base_url() ?>admin/stories/add_story" class="btn btn-primary add-tooltip" data-toggle="tooltip" title="<?php echo translate('add_new_project')?>">
+                    <i class="fa fa-plus"></i> <?php echo translate('add_new_project')?>
+                </a>
+            </div>
 
             <div class="panel-body">
                 <!-- Date Range Form -->

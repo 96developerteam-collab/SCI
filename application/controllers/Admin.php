@@ -305,73 +305,28 @@ function __construct()
 		echo json_encode($legions);
 	}
 	
-	public function add_area() {
-		$this->load->model('Crud_model');
-	
-		$area_name = $this->input->post('area_name');  // missing semicolon fixed
-	
-		if (empty($area_name)) {
-			$response = [
-				'success' => false,
-				'message' => 'Area name is required.'  // message fixed to reflect area_name
-			];
-			log_message('error', 'Add Area validation failed: ' . json_encode($response));
-			echo json_encode($response);
-			return;
-		}
-	
-		$data = ['name' => $area_name];
-	
-		$insert_id = $this->Crud_model->insert_area($data);
-	
-		if ($insert_id) {
-			$response = [
-				'success' => true,
-				'message' => 'Area added successfully.',
-				'area_name' => $area_name,
-				'area_id' => $insert_id
-			];
-			log_message('info', 'Add Area success response: ' . json_encode($response));
-			echo json_encode($response);
-		} else {
-			$response = [
-				'success' => false,
-				'message' => 'Failed to add area.'
-			];
-			log_message('error', 'Add Area failed to insert: ' . json_encode($response));
-			echo json_encode($response);
-		}
-	}
-	
-
 public function add_legion() {
     // Load model
     $this->load->model('Crud_model');
 
-    // Get POST data - ADD PREFIX HERE
+    // Get POST data
     $legion_name = $this->input->post('legion_name');
-    $prefix = $this->input->post('prefix'); // NEW LINE
-    $area_id = $this->input->post('area_id');
+    $prefix = $this->input->post('prefix'); 
 
-    // Log the received data
-    log_message('info', 'Add Legion request received with data: legion_name=' . $legion_name . ', prefix=' . $prefix . ', area_id=' . $area_id);
-
-    // Simple validation - UPDATE VALIDATION
-    if (empty($legion_name) || empty($prefix) || empty($area_id)) {
+    // Simple validation
+    if (empty($legion_name) || empty($prefix)) {
         $response = [
             'success' => false,
-            'message' => 'Legion name, prefix, and area ID are required.'
+            'message' => 'Legion name and prefix are required.'
         ];
-        log_message('error', 'Add Legion validation failed: ' . json_encode($response));
         echo json_encode($response);
         return;
     }
 
-    // Prepare data - ADD PREFIX TO DATA ARRAY
+    // Prepare data
     $data = [
         'name' => $legion_name,
-        'prefix' => strtoupper(trim($prefix)), // Store in uppercase
-        'area_id' => $area_id
+        'prefix' => strtoupper(trim($prefix)) // Store in uppercase
     ];
 
     // Insert via model and check result
@@ -386,19 +341,16 @@ public function add_legion() {
             'success' => true,
             'message' => 'Legion added successfully.',
             'legion_name' => $legion_name,
-            'prefix' => strtoupper(trim($prefix)), // RETURN PREFIX
+            'prefix' => strtoupper(trim($prefix)), 
             'legion_id' => $insert_id,
-            'legion_id_generated' => $legion->legion_id_generated ?? '', // RETURN GENERATED ID
-            'area_id' => $area_id
+            'legion_id_generated' => $legion->legion_id_generated ?? ''
         ];
-        log_message('info', 'Add Legion success response: ' . json_encode($response));
         echo json_encode($response);
     } else {
         $response = [
             'success' => false,
             'message' => 'Failed to add legion.'
         ];
-        log_message('error', 'Add Legion failed to insert: ' . json_encode($response));
         echo json_encode($response);
     }
 }
@@ -406,8 +358,6 @@ public function add_legion() {
 
 public function delete_legion()
 {
-    log_message('info', 'Delete legion method invoked');
-
     $json = file_get_contents('php://input');
     $data = json_decode($json, true);
 
@@ -443,48 +393,7 @@ public function delete_legion()
     }
 }
 
-
-	
-public function delete_area()
-{
-    log_message('info', 'Delete area method invoked');
-
-    $json = file_get_contents('php://input');
-    $data = json_decode($json, true);
-
-    $area_id = $data['area_id'] ?? null;
-
-    if (!$area_id) {
-        echo json_encode(['success' => false, 'message' => 'Missing area ID']);
-        return;
-    }
-
-    // ✅ Check if the area is being used in `legions` table
-    $inUse = $this->db->get_where('legions', ['area_id' => $area_id])->num_rows();
-
-    if ($inUse > 0) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Cannot delete: This area has assigned legions.'
-        ]);
-        return;
-    }
-
-    // ✅ Proceed with deletion
-    $this->db->where('id', $area_id); // assuming `id` is primary key in `area` table
-    $deleted = $this->db->delete('areas'); // use actual table name
-
-    if ($deleted) {
-        echo json_encode(['success' => true]);
-    } else {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Delete failed. Please try again.'
-        ]);
-    }
-}
-
-public function area_legion() {
+public function legions() {
     // Check permission
     if ($this->admin_permission() == FALSE) {
         redirect(base_url() . 'admin/login', 'refresh');
@@ -493,14 +402,14 @@ public function area_legion() {
     // Load the model
     $this->load->model('Crud_model');
 
-    // Fetch the data here - MAKE SURE THIS INCLUDES PREFIX
-    $page_data['areas'] = $this->Crud_model->get_areas_with_legions();
+    // Fetch the data here - GET ALL LEGIONS
+    $page_data['legions'] = $this->db->get('legions')->result_array();
 
     // Prepare other page data
-    $page_data['title'] = "Area & Legions || " . $this->system_title;
-    $page_data['page_name'] = "area_legion";
+    $page_data['title'] = "Legions || " . $this->system_title;
+    $page_data['page_name'] = "legions";
     $page_data['top'] = "dashboard.php";
-    $page_data['folder'] = "area_legion"; 
+    $page_data['folder'] = "legions"; 
     $page_data['file'] = "index.php";    
     $page_data['bottom'] = "dashboard.php";
 
@@ -518,10 +427,9 @@ public function add_member() {
     $mobile = $this->input->post('mobile');
     $gender = $this->input->post('gender');
     $legion_id = $this->input->post('legion_id');
-    $area_id = $this->input->post('area_id');
 
     // Validation
-    if (empty($first_name) || empty($email) || empty($legion_id) || empty($area_id)) {
+    if (empty($first_name) || empty($email) || empty($legion_id)) {
         $response = [
             'success' => false,
             'message' => 'Required fields are missing.'
@@ -538,7 +446,6 @@ public function add_member() {
         'mobile' => $mobile,
         'gender' => $gender,
         'legion_id' => $legion_id,
-        'area_id' => $area_id,
         'password' => password_hash('default123', PASSWORD_DEFAULT), // Default password
         'email_verification_status' => 1 // Verified by default for admin creation
     ];
@@ -617,7 +524,7 @@ public function add_member() {
 				// $areas = $this->Crud_model->get_all_areas(); // Replace with your actual model name
 				// log_message('debug', 'Fetched Areas: ' . print_r($areas, true));
 
-				$page_data['areas'] = $this->Crud_model->get_all_areas();
+				$page_data['legions'] = $this->db->get('legions')->result_array();
 				
 				$page_data['top'] 		= "members/index.php";
 				$page_data['folder'] 	= "admin";
@@ -640,15 +547,10 @@ public function add_member() {
 					'admin_id' => $para2
 				))->result_array();
 
-				$page_data['areas'] = $this->Crud_model->get_all_areas();
+				$page_data['legions'] = $this->db->get('legions')->result_array();
 				
-				// Get existing Area
-				$existing_area = $this->db->get_where('admin_area', array('admin_id' => $para2))->row_array();
-				$page_data['existing_area_id'] = $existing_area ? $existing_area['area_id'] : '';
-
-				// Get existing Legion
-				$existing_legion = $this->db->get_where('admin_legion', array('admin_id' => $para2))->row_array();
-				$page_data['existing_legion_id'] = $existing_legion ? $existing_legion['legion_id'] : '';
+				$page_data['existing_area_id'] = '';
+				$page_data['existing_legion_id'] = !empty($page_data['admin_data']) ? $page_data['admin_data'][0]['legion_id'] : '';
 
 				if ($this->session->flashdata('alert') == "failed_edit") {
 					$page_data['danger_alert'] = translate("failed_to_add_the_data!");
@@ -657,53 +559,12 @@ public function add_member() {
 				$this->load->view('back/index', $page_data);
 			} 
 			
-			// elseif ($para1 == "do_add") {
-			// 	$this->form_validation->set_rules('name', 'Name', 'required');
-			// 	$this->form_validation->set_rules('email', 'Email', 'required');
-			// 	$this->form_validation->set_rules('phone', 'Phone No.', 'required');
-			// 	$this->form_validation->set_rules('role', 'role', 'required');
-
-
-			// 	if ($this->form_validation->run() == FALSE) {
-			// 		$page_data['top'] 		= "members/index.php";
-			// 		$page_data['folder'] 	= "admin";
-			// 		$page_data['file']	 	= "add_admin.php";
-			// 		$page_data['bottom'] 	= "members/index.php";
-			// 		$page_data['page_name'] = "admin";
-
-			// 		$page_data['form_contents'] = $this->input->post();
-
-			// 		$page_data['danger_alert'] = translate("failed_to_add_the_data!");
-
-			// 		$this->load->view('back/index', $page_data);
-			// 	} else {
-			// 		$data['name'] = $this->input->post('name');
-			// 		$data['email'] = $this->input->post('email');
-			// 		$data['phone'] = $this->input->post('phone');
-			// 		$data['address'] = $this->input->post('address');
-			// 		$password = substr(hash('sha512', rand()), 0, 12);
-			// 		$data['password'] = sha1($password);
-			// 		$data['role'] = $this->input->post('role');
-			// 		$data['timestamp'] = time();
-			// 		$result = $this->db->insert('admin', $data);
-
-			// 		$this->Email_model->member_staff_account_opening_by_admin('admin', $data['email'], $password);
-
-			// 		recache();
-			// 		if ($result) {
-			// 			$this->session->set_flashdata('alert', 'add');
-			// 			redirect(base_url() . 'admin/admins', 'refresh');
-			// 		} else {
-			// 			$this->session->set_flashdata('alert', 'failed_add');
-			// 			redirect(base_url() . 'admin/admins', 'refresh');
-			// 		}
-			// 	}
+			
 			elseif ($para1 == "do_add") {
-				$this->form_validation->set_rules('name', 'Name', 'required');
+				$this->form_validation->set_rules('name', 'Name', 'trim');
 				$this->form_validation->set_rules('email', 'Email', 'required|valid_email');
-				$this->form_validation->set_rules('phone', 'Phone No.', 'required');
+				$this->form_validation->set_rules('phone', 'Phone No.', 'trim');
 				$this->form_validation->set_rules('role', 'Role', 'required');
-				$this->form_validation->set_rules('area', 'Area', 'required');
 				$this->form_validation->set_rules('legion_id', 'Legion', 'required');
 				$this->form_validation->set_rules('password', 'Password', 'required|min_length[6]');
                 $this->form_validation->set_rules('confirm_password', 'Confirm Password', 'required|matches[password]');
@@ -729,42 +590,18 @@ public function add_member() {
 					$data['phone']     = $this->input->post('phone');
 					$data['address']   = $this->input->post('address');
 					$data['role']      = $this->input->post('role');
+					$data['legion_id'] = $this->input->post('legion_id');
 					$password = $this->input->post('password');
 					$data['password']  = sha1($password);
 					$data['timestamp'] = time();
 			
 					// Insert admin record
-					$this->db->insert('admin', $data);
+					$result = $this->db->insert('admin', $data);
 					$admin_id = $this->db->insert_id();
 			
 					if ($admin_id) {
-						// Define static arrays of role IDs
-						$areaRoleArray   = [2, 3, 4, 5, 6, 7, 8, 9]; 
-						$legionRoleArray = [2, 3, 4, 5, 6, 7, 8, 9];
-					
-						$role_id = (int)$this->input->post('role');
-					
-						// Insert into admin_area if role is allowed
-						if (in_array($role_id, $areaRoleArray)) {
-							$area_data = [
-								'admin_id' => $admin_id,
-								'area_id'  => $this->input->post('area')
-							];
-							$this->db->insert('admin_area', $area_data);
-						}
-					
-						// Insert into admin_legion if role is allowed
-						if (in_array($role_id, $legionRoleArray)) {
-							$legion_data = [
-								'admin_id'  => $admin_id,
-								'legion_id' => $this->input->post('legion_id')
-							];
-							$this->db->insert('admin_legion', $legion_data);
-						}
-					
 						// Send email with password
 						$this->Email_model->member_staff_account_opening_by_admin('admin', $data['email'], $password);
-					
 						recache();
 					
 						$this->session->set_flashdata('alert', 'add');
@@ -778,9 +615,9 @@ public function add_member() {
 			
 			
 			} elseif ($para1 == "update") {
-				$this->form_validation->set_rules('name', 'Name', 'required');
+				$this->form_validation->set_rules('name', 'Name', 'trim');
 				$this->form_validation->set_rules('email', 'Email', 'required');
-				$this->form_validation->set_rules('phone', 'Phone No.', 'required');
+				$this->form_validation->set_rules('phone', 'Phone No.', 'trim');
 				$this->form_validation->set_rules('role', 'role', 'required');
 
 
@@ -801,62 +638,17 @@ public function add_member() {
 
 					$this->load->view('back/index', $page_data);
 				} else {
-					$data['name'] = $this->input->post('name');
-					$data['email'] = $this->input->post('email');
-					$data['phone'] = $this->input->post('phone');
-					$data['address'] = $this->input->post('address');
-
-					$data['role'] = $this->input->post('role');
+					$data['name']      = $this->input->post('name');
+					$data['email']     = $this->input->post('email');
+					$data['phone']     = $this->input->post('phone');
+					$data['address']   = $this->input->post('address');
+					$data['role']      = $this->input->post('role');
+					$data['legion_id'] = $this->input->post('legion_id');
 					$data['timestamp'] = time();
+
 					$this->db->where('admin_id', $para2);
 					$result = $this->db->update('admin', $data);
 
-					$admin_id = $para2;
-					$role_id = (int)$this->input->post('role');
-					
-					log_message('error', 'Update Admin ID: ' . $admin_id . ' Role ID: ' . $role_id);
-					log_message('error', 'POST Area: ' . $this->input->post('area'));
-					log_message('error', 'POST Legion: ' . $this->input->post('legion_id'));
-
-					// Define static arrays of role IDs (Same as in do_add)
-					$areaRoleArray   = [2, 3, 4, 5, 6, 7, 8, 9]; 
-					$legionRoleArray = [2, 3, 4, 5, 6, 7, 8, 9];    
-
-					// Update admin_area
-					$this->db->delete('admin_area', array('admin_id' => $admin_id));
-					if (in_array($role_id, $areaRoleArray)) {
-						$area_id = $this->input->post('area');
-						if($area_id){
-								$area_data = [
-								'admin_id' => $admin_id,
-								'area_id'  => $area_id
-							];
-							$this->db->insert('admin_area', $area_data);
-							log_message('error', 'Inserted Admin Area: ' . json_encode($area_data));
-						} else {
-							log_message('error', 'Area ID empty, skipping insert');
-						}
-					} else {
-						log_message('error', 'Role ID not in AreaRoleArray');
-					}
-
-					// Update admin_legion
-					$this->db->delete('admin_legion', array('admin_id' => $admin_id));
-					if (in_array($role_id, $legionRoleArray)) {
-						$legion_id = $this->input->post('legion_id');
-						if($legion_id){
-							$legion_data = [
-								'admin_id'  => $admin_id,
-								'legion_id' => $legion_id
-							];
-							$this->db->insert('admin_legion', $legion_data);
-							log_message('error', 'Inserted Admin Legion: ' . json_encode($legion_data));
-						} else {
-							log_message('error', 'Legion ID empty, skipping insert');
-						}
-					} else {
-						log_message('error', 'Role ID not in LegionRoleArray');
-					}
 					recache();
 					if ($result) {
 						$this->session->set_flashdata('alert', 'add');
@@ -1025,22 +817,11 @@ public function add_member() {
 
 		 $log_message = "members - para1: $para1, para2: $para2, para3: $para3, para4: $para4";
     	log_message("info", $log_message);
-	     //error_reporting(E_ALL);
-	     // ini_set('display_errors',1);
+
 		if ($this->admin_permission() == FALSE) {
 			redirect(base_url() . 'admin/login', 'refresh');
 		} else {
-			// if (!empty($_POST['free_member_gender'])) {
-			// 	$this->session->set_userdata('free_member_status_type', $_POST['free_member_gender']);
-			// 	$this->session->set_userdata('free_filter_status', $_POST['free_filter_status']);
-			// 	$this->session->set_userdata('free_member_profile_image', $_POST['free_member_profile_image']);
-			// }
-
-			// if (!empty($_POST['premium_member_gender'])) {
-			// 	$this->session->set_userdata('premium_member_status_type', $_POST['premium_member_gender']);
-			// 	$this->session->set_userdata('premium_filter_status', $_POST['premium_filter_status']);
-			// 	$this->session->set_userdata('premium_member_profile_image', $_POST['premium_member_profile_image']);
-			// }
+			
 			$member_types = ['guest', 'free', 'premium', 'ngb', 'national'];
 
 			foreach ($member_types as $type) {
@@ -1048,6 +829,7 @@ public function add_member() {
 					$this->session->set_userdata("{$type}_member_status_type", $_POST["{$type}_member_gender"]);
 					$this->session->set_userdata("{$type}_filter_status", $_POST["{$type}_filter_status"]);
 					$this->session->set_userdata("{$type}_member_profile_image", $_POST["{$type}_member_profile_image"]);
+					$this->session->set_userdata("{$type}_member_since", $_POST["{$type}_member_since"]);
 				}
 			}
 
@@ -1353,7 +1135,7 @@ public function add_member() {
 							$package_info = json_decode($package_info, true);
 							$nestedData['package'] = $package_info[0]['current_package'];
 						}
-						$nestedData['member_since'] = date('d/m/Y h:i:s A', strtotime($member->member_since));
+						$nestedData['member_since'] = ($member->member_since) ? date('Y', strtotime($member->member_since)) : '';
 						$nestedData['member_status'] = $acnt_status_button;
 						$nestedData['options'] = "<a href='" . base_url() . "admin/members/" . $para1 . "/view_member/" . $member->member_id . "' id='demo-dt-view-btn' class='btn btn-primary btn-xs add-tooltip' data-toggle='tooltip' data-placement='top' title='" . translate('view_profile' ) . "' ><i class='fa fa-eye'></i></a>
 						 <a href='" . base_url() . "admin/members/" . $para1 . "/edit_member/" . $member->member_id . "' id='demo-dt-edit-btn' class='btn btn-primary btn-xs add-tooltip' data-toggle='tooltip' data-placement='top' title='" . translate('edit_profile') . "' ><i class='fa fa-edit'></i></a>
@@ -1625,7 +1407,7 @@ public function add_member() {
 							$package_info = json_decode($package_info, true);
 							$nestedData['package'] = $package_info[0]['current_package'];
 						}
-						$nestedData['member_since'] = date('d/m/Y h:i:s A', strtotime($member->member_since));
+						$nestedData['member_since'] = ($member->member_since) ? date('Y', strtotime($member->member_since)) : '';
 						$nestedData['member_status'] = $acnt_status_button;
 						$nestedData['options'] = "<a href='" . base_url() . "admin/members/" . $para1 . "/view_member/" . $member->member_id . "' id='demo-dt-view-btn' class='btn btn-primary btn-xs add-tooltip' data-toggle='tooltip' data-placement='top' title='" . translate('view_profile') . "' ><i class='fa fa-eye'></i></a>";
 						$data[] = $nestedData;
@@ -1669,17 +1451,17 @@ public function add_member() {
 					$page_data['bottom'] 	= "members/members.php";
 					$page_data['get_free_member_by_id'] = $this->db->get_where("member", array("membership" => 1, "member_id" => $para3))->result();
 				} elseif ($para2 == "edit_member") {
-					$page_data['areas'] = $this->Crud_model->get_all_areas();
+					$page_data['legions'] = $this->Crud_model->get_all_legions();
 					$page_data['top'] 		= "members/members.php";
 					$page_data['folder'] 	= "members";
 					$page_data['file']	 	= "edit_member.php";
 					$page_data['bottom'] 	= "members/members.php";
 					$get_member = $this->db->get_where("member", array("membership" => 1, "member_id" => $para3))->result();
 					$page_data['get_free_member_by_id'] = $get_member;
-					if (!empty($get_member)) {
-						$area_id = $get_member[0]->area_id;
-						$page_data['legions'] = $this->db->get_where('legions', array('area_id' => $area_id))->result_array();
-					}
+					// if (!empty($get_member)) {
+					// 	$area_id = $get_member[0]->area_id;
+					// 	$page_data['legions'] = $this->db->get_where('legions', array('area_id' => $area_id))->result_array();
+					// }
 				} elseif ($para2 == "print_member") {
 					$this->load->library('pdf');
 					$page_data['get_free_member_by_id'] = $this->db->get_where("member", array("membership" => 1, "member_id" => $para3))->result();
@@ -1761,17 +1543,17 @@ public function add_member() {
 					$page_data['bottom'] = "members/members.php";
 					$page_data['get_premium_member_by_id'] = $this->db->get_where("member", array("membership" => 2, "member_id" => $para3))->result();
 				} elseif ($para2 == "edit_member") {
-					$page_data['areas'] = $this->Crud_model->get_all_areas();
+					$page_data['legions'] = $this->Crud_model->get_all_legions();
 					$page_data['top'] 		= "members/members.php";
 					$page_data['folder'] 	= "members";
 					$page_data['file']	 	= "edit_member.php";
 					$page_data['bottom'] 	= "members/members.php";
 					$get_member = $this->db->get_where("member", array("membership" => 2, "member_id" => $para3))->result();
 					$page_data['get_premium_member_by_id'] = $get_member;
-					if (!empty($get_member)) {
-						$area_id = $get_member[0]->area_id;
-						$page_data['legions'] = $this->db->get_where('legions', array('area_id' => $area_id))->result_array();
-					}
+					// if (!empty($get_member)) {
+					// 	$area_id = $get_member[0]->area_id;
+					// 	$page_data['legions'] = $this->db->get_where('legions', array('area_id' => $area_id))->result_array();
+					// }
 				} elseif ($para2 == "print_member") {
 					$this->load->library('pdf');
 					$page_data['get_premium_member_by_id'] = $this->db->get_where("member", array("membership" => 2, "member_id" => $para3))->result();
@@ -1856,17 +1638,17 @@ public function add_member() {
 					$page_data['bottom'] = "members/members.php";
 					$page_data['get_national_member_by_id'] = $this->db->get_where("member", array("membership" => 3, "member_id" => $para3))->result();
 				} elseif ($para2 == "edit_member") {
-					$page_data['areas'] = $this->Crud_model->get_all_areas();
+					$page_data['legions'] = $this->Crud_model->get_all_legions();
 					$page_data['top'] 		= "members/members.php";
 					$page_data['folder'] 	= "members";
 					$page_data['file']	 	= "edit_member.php";
 					$page_data['bottom'] 	= "members/members.php";
 					$get_member = $this->db->get_where("member", array("membership" => 3, "member_id" => $para3))->result();
 					$page_data['get_national_member_by_id'] = $get_member;
-					if (!empty($get_member)) {
-						$area_id = $get_member[0]->area_id;
-						$page_data['legions'] = $this->db->get_where('legions', array('area_id' => $area_id))->result_array();
-					}
+					// if (!empty($get_member)) {
+					// 	$area_id = $get_member[0]->area_id;
+					// 	$page_data['legions'] = $this->db->get_where('legions', array('area_id' => $area_id))->result_array();
+					// }
 				} elseif ($para2 == "print_member") {
 					$this->load->library('pdf');
 					$page_data['get_premium_member_by_id'] = $this->db->get_where("member", array("membership" => 3, "member_id" => $para3))->result();
@@ -1949,17 +1731,17 @@ public function add_member() {
 					$page_data['bottom'] = "members/members.php";
 					$page_data['get_guest_member_by_id'] = $this->db->get_where("member", array("membership" => 0, "member_id" => $para3))->result();
 				} elseif ($para2 == "edit_member") {
-					$page_data['areas'] = $this->Crud_model->get_all_areas();
+					$page_data['legions'] = $this->Crud_model->get_all_legions();
 					$page_data['top'] 		= "members/members.php";
 					$page_data['folder'] 	= "members";
 					$page_data['file']	 	= "edit_member.php";
 					$page_data['bottom'] 	= "members/members.php";
 					$get_member = $this->db->get_where("member", array("membership" => 0, "member_id" => $para3))->result();
 					$page_data['get_guest_member_by_id'] = $get_member;
-					if (!empty($get_member)) {
-						$area_id = $get_member[0]->area_id;
-						$page_data['legions'] = $this->db->get_where('legions', array('area_id' => $area_id))->result_array();
-					}
+					// if (!empty($get_member)) {
+					// 	$area_id = $get_member[0]->area_id;
+					// 	$page_data['legions'] = $this->db->get_where('legions', array('area_id' => $area_id))->result_array();
+					// }
 				} elseif ($para2 == "print_member") {
 					$this->load->library('pdf');
 					$page_data['get_premium_member_by_id'] = $this->db->get_where("member", array("membership" => 0, "member_id" => $para3))->result();
@@ -2041,17 +1823,17 @@ public function add_member() {
 					$page_data['bottom'] = "members/members.php";
 					$page_data['get_ngb_member_by_id'] = $this->db->get_where("member", array("membership" => 4, "member_id" => $para3))->result();
 				} elseif ($para2 == "edit_member") {
-					$page_data['areas'] = $this->Crud_model->get_all_areas();
+					$page_data['legions'] = $this->Crud_model->get_all_legions();
 					$page_data['top'] 		= "members/members.php";
 					$page_data['folder'] 	= "members";
 					$page_data['file']	 	= "edit_member.php";
 					$page_data['bottom'] 	= "members/members.php";
 					$get_member = $this->db->get_where("member", array("membership" => 4, "member_id" => $para3))->result();
 					$page_data['get_ngb_member_by_id'] = $get_member;
-					if (!empty($get_member)) {
-						$area_id = $get_member[0]->area_id;
-						$page_data['legions'] = $this->db->get_where('legions', array('area_id' => $area_id))->result_array();
-					}
+					// if (!empty($get_member)) {
+					// 	$area_id = $get_member[0]->area_id;
+					// 	$page_data['legions'] = $this->db->get_where('legions', array('area_id' => $area_id))->result_array();
+					// }
 				} elseif ($para2 == "print_member") {
 					$this->load->library('pdf');
 					$page_data['get_premium_member_by_id'] = $this->db->get_where("member", array("membership" => 4, "member_id" => $para3))->result();
@@ -2121,7 +1903,7 @@ public function add_member() {
 					$page_data['file']	 	= "add_member.php";
 					$page_data['bottom'] 	= "members/index.php";
 					$page_data['page_name'] = "add_member";
-					$page_data['areas'] = $this->Crud_model->get_all_areas();
+					$page_data['legions'] = $this->Crud_model->get_all_legions();
 					
 					// Clear any member list alerts (these shouldn't show on Add Member page)
 					unset($page_data['success_alert']);
@@ -2183,7 +1965,6 @@ public function add_member() {
 							'age'                 => '',
 							'marital_status'        => '',
 							'number_of_children'    => '',
-							'area'                  => $this->input->post('area'),
 							'on_behalf'             => $this->input->post('on_behalf')
 						);
 						$basic_info = json_encode($basic_info);
@@ -2407,7 +2188,6 @@ public function add_member() {
 						$data['status'] = 'approved';
 						$data['first_name'] = $this->input->post('fname');
 						$data['last_name'] = $this->input->post('lname');
-						$data['area_id'] = $this->input->post('area_id');
 						$data['legion_id'] = $this->input->post('legion_id');
 						$data['gender'] = $this->input->post('gender');
 						$data['email'] = $this->input->post('email');
@@ -2454,7 +2234,8 @@ public function add_member() {
 						$data['membership'] = $this->input->post('membership');
 						$data['profile_status'] = 1;
 						$data['is_closed'] = 'no';
-						$data['member_since'] = date("Y-m-d H:i:s");
+						$member_since_year = $this->input->post('member_since');
+						$data['member_since'] = $member_since_year . "-01-01 00:00:00";
 						$data['express_interest'] = $this->db->get_where('plan', array('plan_id' => $plan))->row()->express_interest;
 						$data['direct_messages'] = $this->db->get_where('plan', array('plan_id' => $plan))->row()->direct_messages;
 						$data['photo_gallery'] = $this->db->get_where('plan', array('plan_id' => $plan))->row()->photo_gallery;
@@ -2463,9 +2244,6 @@ public function add_member() {
 						$data['privacy_status'] = $privacy_status;
 						$data['pic_privacy'] = $data_pic_privacy;
 						$data['report_profile'] = '[]';
-						$data['area'] = $this->input->post('area');             // Area name (from hidden input)
-						$data['area_id'] = $this->input->post('area_id');       // Area ID (from <select> value)
-
 						$data['legion'] = $this->input->post('legion');         // Legion name (from hidden input)
 						$data['legion_id'] = $this->input->post('legion_id');   // Legion ID (from <select> value)
 
@@ -2639,7 +2417,6 @@ public function add_member() {
 					$basic_info[] = array(
 						'marital_status'		=>	$this->input->post('marital_status'),
 						'number_of_children'	=>	$this->input->post('number_of_children'),
-						'area'					=>	$this->input->post('area'),
 						'on_behalf'             =>  $this->input->post('on_behalf')
 					);
 					$data['basic_info'] = json_encode($basic_info);
@@ -2846,8 +2623,6 @@ public function add_member() {
 // ✅ Add Legion & Area fields before update
 $data['legion_id'] = $this->input->post('legion_id');
 $data['legion']    = $this->input->post('legion');
-$data['area_id']   = $this->input->post('area_id');
-$data['area']      = $this->input->post('area');
 $data['membership'] = $this->input->post('membership');
 
 $this->db->where('member_id', $para2);
@@ -3546,7 +3321,7 @@ if ($result) {
 					$nestedData['member_id'] = $member->member_profile_id;
 					$nestedData['follower'] = isset($member->follower) ? $member->follower : 0;
 					$nestedData['profile_reported'] = isset($member->reported_by) ? $member->reported_by : 0;
-					$nestedData['member_since'] = date('d/m/Y h:i:s A', strtotime($member->member_since));
+					$nestedData['member_since'] = ($member->member_since) ? date('Y', strtotime($member->member_since)) : '';
 					$nestedData['member_status'] = $acnt_status_button;
 					$nestedData['options'] = "<button data-target='#restore_modal' data-toggle='modal' class='btn btn-success btn-xs add-tooltip' data-toggle='tooltip' data-placement='top' title= '" . translate('restore') . "' onclick='restore($member->member_id)'><i class='fa fa-check'></i></button>" . ' ' . "<button data-target='#permanently_delete_member_modal' data-toggle='modal' class='btn btn-danger btn-xs add-tooltip' data-toggle='tooltip' data-placement='top' title='" . translate('permanently_delete_member') . "' onclick='permanently_delete_member($member->member_id)'><i class='fa fa-trash'></i></button>";
 
@@ -3815,400 +3590,7 @@ if ($result) {
 	}
 
 	
-				// elseif ($para1 == "update_story") {  
-				// 	log_message('debug', 'Story ID to update: ');
-				// 	$this->form_validation->set_rules('story_name', 'Story Name', 'required');
-				// 	$this->form_validation->set_rules('dated', 'Dated', 'required');
-				// 	// $this->form_validation->set_rules('member_name', 'Member Name', 'required');
-				// 	// $this->form_validation->set_rules('partner_name', 'Partner Name', 'required');
-				// 	$this->form_validation->set_rules('description', 'Description', 'required');
-
-				//  if ($this->form_validation->run() == FALSE) {
-				// 		$page_data['top'] 		= "stories/index.php";
-				// 		$page_data['folder'] 	= "stories";
-				// 		$page_data['file']	 	= "edit_story.php";
-				// 		$page_data['bottom'] 	= "stories/index.php";
-				// 		$page_data['page_name'] = "stories";
-				// 		$page_data['form_contents'] = $this->input->post();
-				// 	}else{ 
-				// 		$data=array();
-				// 		$data['title'] = $this->input->post('story_name');
-				// 		$data['happy_story_id'] = $para2;
-				//         $data['date'] = date('Y-m-d',strtotime($this->input->post('dated')));
-				//         $data['member_name'] = $this->input->post('member_name');
-				//         $data['partner_name'] = $this->input->post('partner_name');
-				// 		$data['description'] = $this->input->post('description'); 	
-				// 		$data['program_area'] = $this->input->post('program_area');
-				// 		$data['legion_name'] = $this->input->post('legion_name');
-				// 		$data['area_name'] = $this->input->post('area_name');			         
-				//         //print_r($_FILES);exit;
-				// 		$config = $this->set_upload_happy_story_image();
-				// 		$this->load->library('upload');
-				// 		$this->upload->initialize($config);
-
-				// 		if ($_FILES['story_photo']['name'] !== '') {
-				// 			$id = uniqid();
-				// 			$path = $_FILES['story_photo']['name'];
-				// 			$ext = '.' . pathinfo($path, PATHINFO_EXTENSION);
-				// 			if ($ext == ".jpg" || $ext == ".JPG" || $ext == ".jpeg" || $ext == ".JPEG" || $ext == ".png" || $ext == ".PNG") {
-				// 				$this->Crud_model->file_up("story_photo", "happy_story", $id, '', '', $ext);
-				// 				$images[] = array('image' => 'happy_story_' . $id . $ext, 'thumb' => 'happy_story_' . $id . '_thumb' . $ext);
-				// 				$data['image'] = json_encode($images);
-				// 			} else {
-				// 				$this->session->set_flashdata('alert', 'failed_image');
-				// 				redirect(base_url() . 'admin/stories', 'refresh');
-				// 			}
-				// 		}
-				// 		//print_r($data);exit;
-				// 		$this->db->where('happy_story_id', $para2 );
-				// 		log_message('debug', 'Story ID to update: ', $data);
-				// 		$this->db->update('happy_story', $data);
-				// 		$result = $this->db->affected_rows();
-				// 		if ($result == true) {
-				// 			$this->session->set_flashdata('success', 'Updated successfully');
-				// 			redirect('admin/stories');
-				// 		} else {
-				// 			$this->session->set_flashdata('failed', 'Failed');
-				// 			redirect('admin/stories');
-				// 		}
-
- 				// 	$page_data['top'] 		= "stories/index.php";
-				// 	$page_data['folder'] 	= "stories";
-				// 	$page_data['file']	 	= "edit_story.php";
-				// 	$page_data['bottom'] 	= "stories/index.php";
-				// 	$page_data['page_name'] = "stories";
-				// 	$page_data['get_story'] = $this->db->get_where("happy_story", array("happy_story_id" => $para2))->row_array();
-				// 	//print_r($page_data);exit;
-					
-				// 	 }
-				// 	$this->load->view('back/index', $page_data);
-
-					 
-				// }
-
-
-// function stories($para1 = "", $para2 = "", $para3 = "")
-// 	{ 
- 
-// 		$this->db->where("(membership=2)");
-// 		$this->db->where("(status='approved')");
-//         $query = $this->db->get('member');
-
-//         if($query->num_rows()>0)
-//         {
-//            $res=   $query->result();
-//         }
- 
-
-//        // echo '<pre>';print_r($res);exit;
-// 		if ($this->admin_permission() == FALSE) {
-// 			redirect(base_url() . 'admin/login', 'refresh');
-// 		} else {
-// 			$page_data['title'] = "Admin || " . $this->system_title;
-// 			if ($para1 == "") {
-// 				$page_data['top'] = "stories/index.php";
-// 				$page_data['folder'] = "stories";
-// 				$page_data['file'] = "index.php";
-// 				$page_data['bottom'] = "stories/index.php";
-// 				$page_data['page_name'] = "stories";
-// 				if ($this->session->flashdata('alert') == "approve") {
-// 					$page_data['success_alert'] = translate("you_have_successfully_approved_the_story!");
-// 				} elseif ($this->session->flashdata('alert') == "unpublish") {
-// 					$page_data['danger_alert'] = translate("you_have_successfully_unpublished_the_story!");
-// 				} elseif ($this->session->flashdata('alert') == "delete") {
-// 					$page_data['success_alert'] = translate("you_have_successfully_deleted_the_data!");
-// 				} elseif ($this->session->flashdata('alert') == "failed_delete") {
-// 					$page_data['danger_alert'] = translate("failed_to_delete_the_data!");
-// 				} elseif ($this->session->flashdata('alert') == "demo_msg") {
-// 					$page_data['danger_alert'] = translate("this_operation_is_disabled_in_demo!");
-// 				}
-
-// 				$this->load->view('back/index', $page_data);
-// 			} 
-// 			elseif ($para1 == "edit_story") {  
-// 					$page_data['top'] 		= "stories/index.php";
-// 					$page_data['folder'] 	= "stories";
-// 					$page_data['file']	 	= "edit_story.php";
-// 					$page_data['bottom'] 	= "stories/index.php";
-// 					$page_data['get_story'] = $this->db->get_where("happy_story", array("happy_story_id" => $para2))->row_array();
-					
-// 					//print_r($page_data);exit;
-// 					$page_data['page_name'] = "stories";
-// 					$this->load->view('back/index', $page_data);
-
-					 
-// 				}
-// 				elseif ($para1 == "update_story") {
-//     $this->form_validation->set_rules('story_name', 'Story Name', 'required');
-//     // $this->form_validation->set_rules('dated', 'Dated', 'required');
-//     $this->form_validation->set_rules('description', 'Description', 'required');
-
-//     if ($this->form_validation->run() == FALSE) {
-//         $page_data['top']          = "stories/index.php";
-//         $page_data['folder']       = "stories";
-//         $page_data['file']         = "edit_story.php";
-//         $page_data['bottom']       = "stories/index.php";
-//         $page_data['page_name']    = "stories";
-//         $page_data['form_contents'] = $this->input->post();
-//     } else {
-//         $data = array(
-//             'title'         => $this->input->post('story_name'),
-//             'happy_story_id'=> $para2,
-
-//             'description'   => $this->input->post('description'),
-//             'program_area'  => $this->input->post('program_area'),
-//             'legion_name'   => $this->input->post('legion_name'),
-//             'area_name'     => $this->input->post('area_name')
-//         );
-
-//         // Upload story_photo
-//         if (!empty($_FILES['story_photo']['name'])) {
-//             $id = uniqid();
-//             $path = $_FILES['story_photo']['name'];
-//             $ext = '.' . pathinfo($path, PATHINFO_EXTENSION);
-//             $allowed_exts = [".jpg", ".JPG", ".jpeg", ".JPEG", ".png", ".PNG"];
-
-//             if (in_array($ext, $allowed_exts)) {
-//                 $this->Crud_model->file_up("story_photo", "happy_story", $id, '', '', $ext);
-//                 $images[] = array(
-//                     'image' => 'happy_story_' . $id . $ext,
-//                     'thumb' => 'happy_story_' . $id . '_thumb' . $ext
-//                 );
-//                 $data['image'] = json_encode($images);
-//             } else {
-//                 $this->session->set_flashdata('alert', 'failed_image');
-//                 redirect(base_url() . 'admin/stories', 'refresh');
-//             }
-//         }
-
-//         // Upload activity_photo
-//         if (!empty($_FILES['activity_photo']['name'])) {
-//             $upload = $this->do_upload('activity_photo');
-//             if ($upload['status'] === 'success') {
-//                 $data['activity_photo'] = $upload['file_name'];
-//             } else {
-//                 $this->session->set_flashdata('error', $upload['error']);
-//                 redirect('admin/stories/edit_story/' . $para2);
-//                 return;
-//             }
-//         }
-
-//         // Upload press_coverage
-//         if (!empty($_FILES['press_coverage']['name'])) {
-//             $upload = $this->do_upload('press_coverage');
-//             if ($upload['status'] === 'success') {
-//                 $data['press_coverage'] = $upload['file_name'];
-//             } else {
-//                 $this->session->set_flashdata('error', $upload['error']);
-//                 redirect('admin/stories/edit_story/' . $para2);
-//                 return;
-//             }
-//         }
-
-//         // Update DB
-//         $this->db->where('happy_story_id', $para2);
-//         $this->db->update('happy_story', $data);
-//         $result = $this->db->affected_rows();
-
-//         if ($result > 0) {
-//             $this->session->set_flashdata('success', 'Updated successfully');
-//             redirect('admin/stories');
-//         } else {
-//             $this->session->set_flashdata('failed', 'Failed');
-//             redirect('admin/stories');
-//         }
-//     }
-
-//     // In case of form validation failure or update failure
-//     $page_data['top']       = "stories/index.php";
-//     $page_data['folder']    = "stories";
-//     $page_data['file']      = "edit_story.php";
-//     $page_data['bottom']    = "stories/index.php";
-//     $page_data['page_name'] = "stories";
-//     $page_data['get_story'] = $this->db->get_where("happy_story", array("happy_story_id" => $para2))->row_array();
-
-//     $this->load->view('back/index', $page_data);
-// }
-// 				elseif ($para1 == "list_data") {
-// 					$columns = array(
-// 						0 => '',
-// 						1 => 'title',
-// 						2 => 'date',
-// 						3 => 'description',
-// 						4 => 'options'
-// 					);
-// 					$limit = $this->input->post('length');
-// 					$start = $this->input->post('start');
-				
-// 					// Handle sorting
-// 					if ($this->input->post('order')[0]['column'] == 0) {
-// 						$order = "happy_story_id";
-// 						$dir = "desc";
-// 					} else {
-// 						$order = $columns[$this->input->post('order')[0]['column']];
-// 						$dir = $this->input->post('order')[0]['dir'];
-// 					}
-// 					$table = 'happy_story';
-
-					
-				
-// 					// Get total records
-// 					$totalData = $this->Crud_model->alldata_count($table);
-				
-// 					$totalFiltered = $totalData;
-				
-// 					// Fetch data
-// 					if (empty($this->input->post('search')['value'])) {
-// 						$rows = $this->Crud_model->allstories($table, $limit, $start, $order, $dir);
-// 					} else {
-// 						$search = $this->input->post('search')['value'];
-// 						$rows = $this->Crud_model->story_search($table, $limit, $start, $search, $order, $dir);
-// 						$totalFiltered = $this->Crud_model->story_search_count($table, $search);
-// 					}
-				
-// 					$data = array();
-// 					if (!empty($rows)) {
-// 						foreach ($rows as $row) {
-// 							// Format activity_photo as an img tag
-// 							$story_image = $row->activity_photo && file_exists('Uploads/happy_story_image/' . $row->activity_photo) ?
-// 								"<img src='" . base_url('Uploads/happy_story_image/' . $row->activity_photo) . "' class='img-sm' height='30' width='30' alt='story image'>" :
-// 								"<img src='" . base_url('Uploads/happy_story_image/default_image.jpg') . "' class='img-sm' height='30' width='30' alt='default image'>";
-				
-// 							// Approval button based on role
-// 							$role_id = $this->session->userdata('role_id');
-// 							$national_role_ids = [1, 3, 4, 5, 6];
-// 							$is_national_role = in_array((int)$role_id, $national_role_ids);
-// 							$approve_button = '';
-// 							if ($is_national_role) {
-// 								if ($row->approval_status == 1) {
-// 									$approve_button = "
-// 										<button data-target='#approval_modal' data-toggle='modal' class='btn btn-dark btn-xs add-tooltip'
-// 											title='" . translate('unpublish') . "'
-// 											onclick='approval(0, {$row->happy_story_id})'>
-// 											<i class='fa fa-close'></i>
-// 										</button>";
-// 								} elseif ($row->approval_status == 0) {
-// 									$approve_button = "
-// 										<button data-target='#approval_modal' data-toggle='modal' class='btn btn-success btn-xs add-tooltip'
-// 											title='" . translate('approve') . "'
-// 											onclick='approval(1, {$row->happy_story_id})'>
-// 											<i class='fa fa-check'></i>
-// 										</button>";
-// 								}
-// 							}
-				
-// 							// Prepare DataTable row
-// 							$nestedData = [];
-// 							$nestedData['partner_name'] =  $row->title;
-// 							$nestedData['image'] = $story_image;
-// 							$nestedData['title'] = $row->title;
-// 							$nestedData['date'] = $row->date;
-
-
-// 							$nestedData['description'] = $row->description;
-// 							$nestedData['options'] = $approve_button . "
-// 								<a href='" . base_url('admin/stories/view_story/' . $row->happy_story_id) . "' class='btn btn-primary btn-xs add-tooltip' data-toggle='tooltip' data-placement='top' title='" . translate('view') . "'><i class='fa fa-eye'></i></a>
-// 								<a href='" . base_url('admin/stories/edit_story/' . $row->happy_story_id) . "' class='btn btn-primary btn-xs add-tooltip' data-toggle='tooltip' data-placement='top' title='" . translate('edit') . "'><i class='fa fa-edit'></i></a>
-// 								<button data-target='#delete_modal' data-toggle='modal' class='btn btn-danger btn-xs add-tooltip' data-toggle='tooltip' data-placement='top' title='" . translate('delete') . "' onclick='delete_story(" . $row->happy_story_id . ")'><i class='fa fa-trash'></i></button>";
-				
-// 							$data[] = $nestedData;
-// 						}
-// 					}
-				
-// 					$json_data = array(
-// 						"draw" => intval($this->input->post('draw')),
-// 						"recordsTotal" => intval($totalData),
-// 						"recordsFiltered" => intval($totalFiltered),
-// 						"data" => $data
-// 					);
-// 					echo json_encode($json_data);
-// 				}
-// 			elseif ($para1 == "approval") {
-// 				if ($para2 == 0) {
-// 					$data['approval_status'] = 1;
-// 					$this->session->set_flashdata('alert', 'approve');
-// 				} elseif ($para2 == 1) {
-// 					$data['approval_status'] = 0;
-// 					$this->session->set_flashdata('alert', 'unpublish');
-// 				}
-// 				$this->db->where('happy_story_id', $para3);
-// 				$this->db->update('happy_story', $data);
-// 				recache();
-// 			} elseif ($para1 == "view_story") {
-// 				$page_data['top'] = "stories/stories.php";
-// 				$page_data['folder'] = "stories";
-// 				$page_data['file'] = "view_story.php";
-// 				$page_data['bottom'] = "stories/stories.php";
-// 				$page_data['get_story'] = $this->db->get_where("happy_story", array("happy_story_id" => $para2))->result();
-// 				$page_data['page_name'] = "stories";
-// 				$this->load->view('back/index', $page_data);
-// 			} elseif ($para1 == "delete") {
-// 				if (demo()) {
-// 					$this->session->set_flashdata('alert', 'demo_msg');
-// 					return false;
-// 				}
-// 				$img =  $this->db->get_where("happy_story", array("happy_story_id" => $para2))->row()->image;
-// 				$img = json_decode($img, true);
-// 				unlink('uploads/happy_story_image/' . $img[0]['img']);
-// 				unlink('uploads/happy_story_image/' . $img[0]['thumb']);
-// 				$video_exist = $this->db->get_where("story_video", array("story_id" => $para2))->result();
-// 				if ($video_exist) {
-// 					$vid_type = $this->db->get_where("story_video", array("story_id" => $para2))->row()->type;
-// 					if ($vid_type == 'upload') {
-// 						$video_src = $this->db->get_where("story_video", array("story_id" => $para2))->row()->video_src;
-// 						unlink($video_src);
-// 					}
-// 					$this->db->where('story_id', $para2);
-// 					$this->db->delete('story_video');
-// 				}
-// 				$this->db->where('happy_story_id', $para2);
-// 				$result = $this->db->delete('happy_story');
-// 				recache();
-// 				if ($result) {
-// 					$this->session->set_flashdata('alert', 'delete');
-// 				} else {
-// 					$this->session->set_flashdata('alert', 'failed_delete');
-// 				}
-// 			}
-// 			else if ($para1 == "add_story") {
-// 				$page_data['top'] = "stories/index.php";
-// 				$page_data['folder'] = "stories";
-// 				$page_data['file'] = "add_story.php";
-// 				$page_data['bottom'] = "stories/index.php";
-// 				$page_data['page_name'] = "stories";
-			
-// 				// Get admin_id from session
-// 				$admin_id = $this->session->userdata('admin_id');
-// 				$admin_name = $this->session->userdata('name');
-// 				// $admin_id = 26;
-// 				// Fetch legion data for autofill based on session admin_id
-// 				$legion_info = $this->Crud_model->get_legion_and_area_by_admin($admin_id);
-
-// 				if (!$legion_info['status']) {
-// 					$this->session->set_flashdata('failed', $legion_info['message']);
-// 					redirect('admin/stories');
-// 				}
-				
-// 				$page_data['legion'] = $legion_info;
-// 				$page_data['legion']['admin_name'] = $admin_name;
-			
-// 				$this->load->view('back/index', $page_data);
-// 			}
-			
-// 			else if ($para1 == "edit_story") {
-// 				$page_data['top'] = "stories/index.php";
-// 				$page_data['folder'] = "stories";
-// 				$page_data['file'] = "edit_story.php";
-// 				$page_data['bottom'] = "stories/index.php";
-// 				$page_data['guruji_photo_id'] = $para2;
-// 				$page_data['page_name'] = "stories";
-	
-// 				$this->load->view('back/index', $page_data);
-// 			}
-// 		}
-// 	}
-
-
+		
 function stories($para1 = "", $para2 = "", $para3 = "")
 { 
     // Start output buffering
@@ -4288,15 +3670,31 @@ function stories($para1 = "", $para2 = "", $para3 = "")
         $page_data['folder'] = "stories";
         $page_data['file'] = "edit_story.php";
         $page_data['bottom'] = "stories/index.php";
-        // Allow Super Admin (1) and other authorized roles (7, 9) to edit any story
-        if ($legion_info['status'] || in_array($this->session->userdata('role_id'), [1, 7, 9])) {
-            if (!in_array($this->session->userdata('role_id'), [1, 7, 9])) {
-                $this->db->where('happy_story.legion_id', $legion_info['legion_id']);
+        
+        $logged_in_admin_id = $this->session->userdata('admin_id');
+        $logged_in_role_id = $this->session->userdata('role_id');
+        
+        // Allow Super Admin (1) and other authorized roles (3, 7, 9) to edit any story
+        // For role_id = 3, filter by admin_id column in happy_story table
+        if ($legion_info['status'] || in_array($logged_in_role_id, [1, 3, 7, 9])) {
+            $where_clause = [];
+            
+            if ($logged_in_role_id == 3) {
+                // For role_id = 3, filter by admin_id matching logged-in admin
+                $where_clause['happy_story.admin_id'] = $logged_in_admin_id;
+            } elseif (!$legion_info['status']) {
+                // For other non-super-admins with legion
+                $where_clause['happy_story.legion_id'] = $legion_info['legion_id'];
             }
+            
+            if (!empty($where_clause)) {
+                $this->db->where($where_clause);
+            }
+            
             $page_data['get_story'] = $this->db->get_where("happy_story", array("happy_story_id" => $para2))->row_array();
             log_message('debug', 'Edit story query: ' . $this->db->last_query());
             if (!$page_data['get_story']) {
-                log_message('debug', 'Story not found or unauthorized for happy_story_id: ' . $para2 . ', legion_id: ' . ($legion_info['legion_id'] ?? 'All'));
+                log_message('debug', 'Story not found or unauthorized for happy_story_id: ' . $para2 . ', admin_id: ' . ($logged_in_role_id == 3 ? $logged_in_admin_id : ($legion_info['legion_id'] ?? 'All')));
                 $this->session->set_flashdata('failed', 'Story not found or not authorized.');
                 ob_end_clean();
                 redirect(base_url() . 'admin/stories');
@@ -4323,14 +3721,20 @@ function stories($para1 = "", $para2 = "", $para3 = "")
             $page_data['page_name'] = "stories";
             $page_data['form_contents'] = $this->input->post();
         } else {
+            $logged_in_admin_id = $this->session->userdata('admin_id');
+            $logged_in_role_id = $this->session->userdata('role_id');
+            
             // Allow Super Admin (1) and other authorized roles (7, 9) to update any story
-            if ($legion_info['status'] || in_array($this->session->userdata('role_id'), [1, 7, 9])) {
+            // For role_id = 3, filter by admin_id column in happy_story table
+            if ($legion_info['status'] || in_array($logged_in_role_id, [1, 7, 9]) || $logged_in_role_id == 3) {
                 $data = array(
                     'title' => $this->input->post('story_name'),
                     'description' => $this->input->post('description'),
                     'program_area' => $this->input->post('program_area'),
                     'legion_name' => $this->input->post('legion_name'),
-                    'area_name' => $this->input->post('area_name')
+                    'area_name' => $this->input->post('area_name'),
+                    'member_name' => $this->input->post('member_name'),
+                    'designation' => $this->input->post('designation')
                 );
 
                 if (!empty($_FILES['story_photo']['name'])) {
@@ -4373,9 +3777,15 @@ function stories($para1 = "", $para2 = "", $para3 = "")
                 }
 
                 $this->db->where('happy_story_id', $para2);
-                if (!in_array($this->session->userdata('role_id'), [1, 7, 9])) {
+                
+                // Apply filter based on role
+                if ($logged_in_role_id == 3) {
+                    // For role_id = 3, filter by admin_id matching logged-in admin
+                    $this->db->where('happy_story.admin_id', $logged_in_admin_id);
+                } elseif ($legion_info['status'] && !in_array($logged_in_role_id, [1, 7, 9])) {
                     $this->db->where('happy_story.legion_id', $legion_info['legion_id']);
                 }
+                
                 $this->db->update('happy_story', $data);
                 log_message('debug', 'Update story query: ' . $this->db->last_query());
                 $result = $this->db->affected_rows();
@@ -4441,25 +3851,39 @@ function stories($para1 = "", $para2 = "", $para3 = "")
                 'data' => []
             );
 
-            // Allow Super Admin (1), and Roles 7, 9 (e.g. Editor/Manager) to see all data
-            if (($legion_info['status'] && !empty($legion_info['legion_id'])) || in_array($this->session->userdata('role_id'), [1, 7, 9])) {
+            // Get logged-in admin ID and role
+            $logged_in_admin_id = $this->session->userdata('admin_id');
+            $logged_in_role_id = $this->session->userdata('role_id');
+            
+            // Allow Super Admin (1), and Roles 3, 7, 9 (e.g. Editor/Manager) to see all data
+            // For role_id = 3, filter by admin_id column in happy_story table
+            if (($legion_info['status'] && !empty($legion_info['legion_id'])) || in_array($logged_in_role_id, [1, 3, 7, 9])) {
                 // Reset query builder state
                 $this->db->reset_query();
-                
-                $is_super_admin = in_array($this->session->userdata('role_id'), [1, 7, 9]);
+
+                $is_super_admin = in_array($logged_in_role_id, [1, 3, 7, 9]);
+                $is_role_3 = ($logged_in_role_id == 3);
 
                 // Fallback queries with explicit table qualification
                 if (!method_exists($this->Crud_model, 'alldata_count')) {
-                    if (!$is_super_admin) {
+                    if ($is_role_3) {
+                        // For role_id = 3, filter by admin_id matching logged-in admin
+                        $this->db->where('happy_story.admin_id', $logged_in_admin_id);
+                    } elseif (!$is_super_admin) {
                         $this->db->where('happy_story.legion_id', $legion_info['legion_id']);
                     }
                     $this->db->from($table);
                     $totalData = $this->db->count_all_results();
                 } else {
-                    if (!$is_super_admin) {
-                        $this->db->where('happy_story.legion_id', $legion_info['legion_id']);
+                    if ($is_role_3) {
+                        // For role_id = 3, filter by admin_id matching logged-in admin
+                        $totalData = $this->Crud_model->alldata_count($table, null, ['happy_story.admin_id' => $logged_in_admin_id]);
+                    } else {
+                        if (!$is_super_admin) {
+                            $this->db->where('happy_story.legion_id', $legion_info['legion_id']);
+                        }
+                        $totalData = $this->Crud_model->alldata_count($table);
                     }
-                    $totalData = $this->Crud_model->alldata_count($table);
                 }
                 $totalFiltered = $totalData;
                 log_message('debug', 'Total stories query: ' . $this->db->last_query());
@@ -4469,24 +3893,35 @@ function stories($para1 = "", $para2 = "", $para3 = "")
                     if (!method_exists($this->Crud_model, 'allstories')) {
                         $this->db->select('happy_story.*');
                         $this->db->from($table);
-                        if (!$is_super_admin) {
+                        if ($is_role_3) {
+                            // For role_id = 3, filter by admin_id matching logged-in admin
+                            $this->db->where('happy_story.admin_id', $logged_in_admin_id);
+                        } elseif (!$is_super_admin) {
                             $this->db->where('happy_story.legion_id', $legion_info['legion_id']);
                         }
                         $this->db->limit($limit, $start);
                         $this->db->order_by($order, $dir);
                         $rows = $this->db->get()->result();
                     } else {
-                        if (!$is_super_admin) {
-                            $this->db->where('happy_story.legion_id', $legion_info['legion_id']);
+                        if ($is_role_3) {
+                            // For role_id = 3, filter by admin_id matching logged-in admin
+                            $rows = $this->Crud_model->allstories($table, $limit, $start, $order, $dir, ['happy_story.admin_id' => $logged_in_admin_id]);
+                        } else {
+                            if (!$is_super_admin) {
+                                $this->db->where('happy_story.legion_id', $legion_info['legion_id']);
+                            }
+                            $rows = $this->Crud_model->allstories($table, $limit, $start, $order, $dir);
                         }
-                        $rows = $this->Crud_model->allstories($table, $limit, $start, $order, $dir);
                     }
                 } else {
                     $search = $this->input->post('search')['value'];
                     if (!method_exists($this->Crud_model, 'story_search')) {
                         $this->db->select('happy_story.*');
                         $this->db->from($table);
-                        if (!$is_super_admin) {
+                        if ($is_role_3) {
+                            // For role_id = 3, filter by admin_id matching logged-in admin
+                            $this->db->where('happy_story.admin_id', $logged_in_admin_id);
+                        } elseif (!$is_super_admin) {
                             $this->db->where('happy_story.legion_id', $legion_info['legion_id']);
                         }
                         $this->db->group_start();
@@ -4497,15 +3932,23 @@ function stories($para1 = "", $para2 = "", $para3 = "")
                         $this->db->order_by($order, $dir);
                         $rows = $this->db->get()->result();
                     } else {
-                        if (!$is_super_admin) {
-                            $this->db->where('happy_story.legion_id', $legion_info['legion_id']);
+                        if ($is_role_3) {
+                            // For role_id = 3, filter by admin_id matching logged-in admin
+                            $rows = $this->Crud_model->story_search($table, $limit, $start, $search, $order, $dir, ['happy_story.admin_id' => $logged_in_admin_id]);
+                        } else {
+                            if (!$is_super_admin) {
+                                $this->db->where('happy_story.legion_id', $legion_info['legion_id']);
+                            }
+                            $rows = $this->Crud_model->story_search($table, $limit, $start, $search, $order, $dir);
                         }
-                        $rows = $this->Crud_model->story_search($table, $limit, $start, $search, $order, $dir);
                     }
                     $this->db->reset_query();
                     if (!method_exists($this->Crud_model, 'story_search_count')) {
                         $this->db->from($table);
-                        if (!$is_super_admin) {
+                        if ($is_role_3) {
+                            // For role_id = 3, filter by admin_id matching logged-in admin
+                            $this->db->where('happy_story.admin_id', $logged_in_admin_id);
+                        } elseif (!$is_super_admin) {
                             $this->db->where('happy_story.legion_id', $legion_info['legion_id']);
                         }
                         $this->db->group_start();
@@ -4514,10 +3957,15 @@ function stories($para1 = "", $para2 = "", $para3 = "")
                         $this->db->group_end();
                         $totalFiltered = $this->db->count_all_results();
                     } else {
-                         if (!$is_super_admin) {
-                            $this->db->where('happy_story.legion_id', $legion_info['legion_id']);
+                         if ($is_role_3) {
+                            // For role_id = 3, filter by admin_id matching logged-in admin
+                            $totalFiltered = $this->Crud_model->story_search_count($table, $search, ['happy_story.admin_id' => $logged_in_admin_id]);
+                        } else {
+                            if (!$is_super_admin) {
+                                $this->db->where('happy_story.legion_id', $legion_info['legion_id']);
+                            }
+                            $totalFiltered = $this->Crud_model->story_search_count($table, $search);
                         }
-                        $totalFiltered = $this->Crud_model->story_search_count($table, $search);
                     }
                 }
                 log_message('debug', 'Data query: ' . $this->db->last_query());
@@ -4591,7 +4039,10 @@ function stories($para1 = "", $para2 = "", $para3 = "")
         }
     }
     elseif ($para1 == "approval") {
-        if ($legion_info['status'] || in_array($this->session->userdata('role_id'), [1, 7, 9])) {
+        $logged_in_admin_id = $this->session->userdata('admin_id');
+        $logged_in_role_id = $this->session->userdata('role_id');
+        
+        if ($legion_info['status'] || in_array($logged_in_role_id, [1, 3, 7, 9])) {
             if ($para2 == 0) {
                 $data['approval_status'] = 1;
                 $this->session->set_flashdata('alert', 'approve');
@@ -4600,9 +4051,15 @@ function stories($para1 = "", $para2 = "", $para3 = "")
                 $this->session->set_flashdata('alert', 'unpublish');
             }
             $this->db->where('happy_story_id', $para3);
-            if (!in_array($this->session->userdata('role_id'), [1, 7, 9])) {
+            
+            // Apply filter based on role
+            if ($logged_in_role_id == 3) {
+                // For role_id = 3, filter by admin_id matching logged-in admin
+                $this->db->where('happy_story.admin_id', $logged_in_admin_id);
+            } elseif (!in_array($logged_in_role_id, [1, 7, 9]) && $legion_info['status']) {
                 $this->db->where('happy_story.legion_id', $legion_info['legion_id']);
             }
+            
             $this->db->update('happy_story', $data);
             log_message('debug', 'Approval query: ' . $this->db->last_query());
             $result = $this->db->affected_rows();
@@ -4626,18 +4083,32 @@ function stories($para1 = "", $para2 = "", $para3 = "")
         $page_data['file'] = "view_story.php";
         $page_data['bottom'] = "stories/stories.php";
         
-        // Allow Super Admin (1) and roles 7, 9 to view any story without legion restriction
-        $is_super_admin = in_array($this->session->userdata('role_id'), [1, 7, 9]);
+        $logged_in_admin_id = $this->session->userdata('admin_id');
+        $logged_in_role_id = $this->session->userdata('role_id');
         
-        if ($legion_info['status'] || $is_super_admin) {
-            // Only apply legion filter if NOT super admin
-            if (!$is_super_admin && $legion_info['status']) {
-                $this->db->where('happy_story.legion_id', $legion_info['legion_id']);
+        // Allow Super Admin (1) and roles 7, 9 to view any story without legion restriction
+        // For role_id = 3, filter by admin_id column in happy_story table
+        $is_super_admin = in_array($logged_in_role_id, [1, 7, 9]);
+        
+        if ($legion_info['status'] || $is_super_admin || $logged_in_role_id == 3) {
+            $where_clause = [];
+            
+            if ($logged_in_role_id == 3) {
+                // For role_id = 3, filter by admin_id matching logged-in admin
+                $where_clause['happy_story.admin_id'] = $logged_in_admin_id;
+            } elseif (!$is_super_admin && $legion_info['status']) {
+                // Only apply legion filter if NOT super admin
+                $where_clause['happy_story.legion_id'] = $legion_info['legion_id'];
             }
+            
+            if (!empty($where_clause)) {
+                $this->db->where($where_clause);
+            }
+            
             $page_data['get_story'] = $this->db->get_where("happy_story", array("happy_story_id" => $para2))->result();
             log_message('debug', 'View story query: ' . $this->db->last_query());
             if (empty($page_data['get_story'])) {
-                log_message('debug', 'Story not found or unauthorized for happy_story_id: ' . $para2 . ', legion_id: ' . ($legion_info['legion_id'] ?? 'N/A'));
+                log_message('debug', 'Story not found or unauthorized for happy_story_id: ' . $para2 . ', admin_id: ' . ($logged_in_role_id == 3 ? $logged_in_admin_id : ($legion_info['legion_id'] ?? 'N/A')));
                 $this->session->set_flashdata('failed', 'Story not found or not authorized.');
                 ob_end_clean();
                 redirect(base_url() . 'admin/stories');
@@ -4658,9 +4129,21 @@ function stories($para1 = "", $para2 = "", $para3 = "")
             ob_end_clean();
             return false;
         }
-        if ($legion_info['status']) {
+        
+        $logged_in_admin_id = $this->session->userdata('admin_id');
+        $logged_in_role_id = $this->session->userdata('role_id');
+        
+        if ($legion_info['status'] || $logged_in_role_id == 3) {
             $this->db->where('happy_story_id', $para2);
-            $this->db->where('happy_story.legion_id', $legion_info['legion_id']);
+            
+            // Apply filter based on role
+            if ($logged_in_role_id == 3) {
+                // For role_id = 3, filter by admin_id matching logged-in admin
+                $this->db->where('happy_story.admin_id', $logged_in_admin_id);
+            } else {
+                $this->db->where('happy_story.legion_id', $legion_info['legion_id']);
+            }
+            
             $story = $this->db->get('happy_story')->row();
             log_message('debug', 'Delete story query: ' . $this->db->last_query());
             if ($story) {
@@ -4686,7 +4169,15 @@ function stories($para1 = "", $para2 = "", $para3 = "")
                     $this->db->delete('story_video');
                 }
                 $this->db->where('happy_story_id', $para2);
-                $this->db->where('happy_story.legion_id', $legion_info['legion_id']);
+                
+                // Apply filter based on role
+                if ($logged_in_role_id == 3) {
+                    // For role_id = 3, filter by admin_id matching logged-in admin
+                    $this->db->where('happy_story.admin_id', $logged_in_admin_id);
+                } else {
+                    $this->db->where('happy_story.legion_id', $legion_info['legion_id']);
+                }
+                
                 $result = $this->db->delete('happy_story');
                 log_message('debug', 'Delete query: ' . $this->db->last_query());
                 recache();
@@ -4725,6 +4216,11 @@ function stories($para1 = "", $para2 = "", $para3 = "")
         }
         $page_data['legion'] = $legion_info;
         $page_data['legion']['admin_name'] = $admin_name;
+        
+        $role = $this->session->userdata('role_id');
+        if($role == 3) {
+            $page_data['all_legions'] = $this->db->get('legions')->result_array();
+        }
         ob_end_clean();
         $this->load->view('back/index', $page_data);
     }
@@ -4753,8 +4249,8 @@ function stories($para1 = "", $para2 = "", $para3 = "")
 		$admin_id = $this->session->userdata('admin_id');
 		$role_id = $this->session->userdata('role_id');
 
-		if (!$role_id || !in_array($role_id, [2, 8])) {
-			$this->session->set_flashdata('failed', ['general' => 'Only Presidents and Secretaries can add stories.']);
+		if (!$role_id || !in_array((int)$role_id, [1, 2, 3, 8])) {
+			$this->session->set_flashdata('failed', ['general' => 'Unauthorized role for creating projects.']);
 			redirect(base_url('admin/stories'), 'refresh');
 			return;
 		}
@@ -4766,27 +4262,21 @@ function stories($para1 = "", $para2 = "", $para3 = "")
     $partner_name = NULL;
 }
 
-		$this->db->select('legion_id');
-		$this->db->from('admin_legion');
-		$this->db->where('admin_id', $admin_id);
-		$query = $this->db->get();
+		// Fetch actual legion_id from admin table
+		$admin_info = $this->db->get_where('admin', array('admin_id' => $admin_id))->row_array();
+		$legion_id = $admin_info['legion_id'] ?? 0;
 
-		if ($query->num_rows() > 0) {
-			$result = $query->row();
-			$legion_id = $result->legion_id;
-		} else {
-			if (in_array($role_id, [1, 7, 9])) {
-				$legion_id = 0; // Default specifically for Super Admin and other authorized roles
-			} else {
-				$this->session->set_flashdata('failed', ['general' => 'Legion ID not found for this admin.']);
-				redirect('admin/stories/add_story');
-				return;
+		// If role 3, override legion_id based on selected legion_name
+		if ($role_id == 3) {
+			$legion_name = $this->input->post('legion_name');
+			$legion_obj = $this->db->get_where('legions', array('name' => $legion_name))->row_array();
+			if ($legion_obj) {
+				$legion_id = $legion_obj['id'];
 			}
 		}
 
 		// ✅ Form validation including program_date
 		$this->form_validation->set_rules('program_name', 'Program Name', 'required', ['required' => 'Program Name is required.']);
-		$this->form_validation->set_rules('program_area', 'Program Area', 'required', ['required' => 'Program Area is required.']);
 		$this->form_validation->set_rules('date', 'Date', 'required', ['required' => 'Date is required.']);
 		$this->form_validation->set_rules('program_date', 'Program Date', 'required', ['required' => 'Program Date is required.']);
 		$this->form_validation->set_rules('program_details', 'Program Details', 'required|min_length[10]', 
@@ -4799,7 +4289,6 @@ function stories($para1 = "", $para2 = "", $para3 = "")
 
 		if ($this->form_validation->run() == FALSE) {
 			$errors['program_name'] = form_error('program_name');
-			$errors['program_area'] = form_error('program_area');
 			$errors['date'] = form_error('date');
 			$errors['program_date'] = form_error('program_date');
 			$errors['program_details'] = form_error('program_details');
@@ -4889,13 +4378,15 @@ function stories($para1 = "", $para2 = "", $para3 = "")
 			'press_coverage' => $press_coverage,
 			'partner_name' => NULL,
 			'posted_by' => $admin_id,
-			'member_name' => $admin_name,
+			'member_name' => $this->input->post('president_name') ? $this->input->post('president_name') : $admin_name,
 			'legion_name' => $this->input->post('legion_name'),
-			'area_name' => $this->input->post('area'),
+			'area_name' => $this->input->post('area_name'),
 			'program_area' => $this->input->post('program_area'),
-			 'partner_name'   => $partner_name,
+			'designation' => $this->input->post('designation'),
+			'partner_name'   => $partner_name,
 			'approval_status' => 0
 		];
+		$story_data['admin_id'] = $this->session->userdata('admin_id');
 
 		log_message('info', '$story_data ' . $admin_name);
 

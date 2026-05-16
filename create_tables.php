@@ -43,6 +43,13 @@ $sql2 = "CREATE TABLE IF NOT EXISTS `offline_contribution_members` (
   KEY `member_id` (`member_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
 
+$sql3 = "ALTER TABLE `happy_story` ADD COLUMN `admin_id` INT NULL AFTER `approval_status`";
+if ($conn->query($sql3) === TRUE) {
+    echo "Column `admin_id` added successfully to `happy_story` table.";
+} else {
+    echo "Error adding column `admin_id`: " . $conn->error;
+}
+
 if ($conn->query($sql1) === TRUE) {
     echo "Table offline_contribution_invoices created successfully\n";
 } else {
