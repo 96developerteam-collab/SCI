@@ -161,9 +161,21 @@
 					<!-- MEMBER SINCE -->
 					<div class="form-group">
 						<label class="col-sm-3 control-label custom-label"><?= translate('member_since') ?> *</label>
-						<div class="col-sm-8">
-							<select name="member_since" class="form-control selectpicker" required>
-								<option value=""><?= translate('select_year') ?></option>
+						<div class="col-sm-4">
+							<select name="member_since_start" class="form-control selectpicker" required>
+								<option value=""><?= translate('start_year') ?></option>
+								<?php 
+									$current_year = date('Y');
+									for ($i = $current_year; $i >= 1975; $i--) {
+										echo '<option value="'.$i.'">'.$i.'</option>';
+									}
+								?>
+							</select>
+						</div>
+						<div class="col-sm-4">
+							<select name="member_since_end" class="form-control selectpicker" required>
+								<option value=""><?= translate('end_year') ?></option>
+								<option value="present"><?= translate('present') ?></option>
 								<?php 
 									$current_year = date('Y');
 									for ($i = $current_year; $i >= 1975; $i--) {
@@ -173,6 +185,7 @@
 							</select>
 						</div>
 					</div>
+
 
 
                 <!-- LEGION -->

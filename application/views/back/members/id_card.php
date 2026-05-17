@@ -421,8 +421,10 @@
                 <div class="key-dates">
                     <div class="date-box">
                         <span class="date-label">Joined On</span>
-                        <span class="date-val"><?=date('d M Y', strtotime($value->member_since))?></span>
+                        <span class="date-val"><?= $value->member_since ?></span>
                     </div>
+
+
                     <div class="date-box" style="text-align: right;">
                         <span class="date-label">Valid Until</span>
                         <span class="date-val">Lifetime</span>

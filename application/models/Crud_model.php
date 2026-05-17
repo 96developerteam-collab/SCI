@@ -1246,9 +1246,18 @@ public function insert_legion($data) {
                     $this->db->not_like('profile_image', '"profile_image":"female_default.png"');
                 }           
             }
-            if(!empty($this->session->userdata('free_member_since')) && $this->session->userdata('free_member_since') != 'all'){
-                $this->db->like('member_since', $this->session->userdata('free_member_since'));
+            if(!empty($this->session->userdata('free_member_since_start')) && $this->session->userdata('free_member_since_start') != 'all'){
+                $this->db->where('member_since_start >=', $this->session->userdata('free_member_since_start'));
             }
+            if(!empty($this->session->userdata('free_member_since_end')) && $this->session->userdata('free_member_since_end') != 'all'){
+                if ($this->session->userdata('free_member_since_end') == 'present') {
+                    $this->db->where('member_since_end', 'present');
+                } else {
+                    $this->db->where('member_since_end <=', $this->session->userdata('free_member_since_end'));
+                    $this->db->where('member_since_end !=', 'present');
+                }
+            }
+
            
         }
         else if(!empty($this->session->userdata('premium_member_status_type')) && $membership == 2){
@@ -1272,9 +1281,18 @@ public function insert_legion($data) {
                     $this->db->not_like('profile_image', '"profile_image":"male_default.jpg"');
                     $this->db->not_like('profile_image', '"profile_image":"female_default.png"');
                 }           
-            if(!empty($this->session->userdata('premium_member_since')) && $this->session->userdata('premium_member_since') != 'all'){
-                $this->db->like('member_since', $this->session->userdata('premium_member_since'));
+            if(!empty($this->session->userdata('premium_member_since_start')) && $this->session->userdata('premium_member_since_start') != 'all'){
+                $this->db->where('member_since_start >=', $this->session->userdata('premium_member_since_start'));
             }
+            if(!empty($this->session->userdata('premium_member_since_end')) && $this->session->userdata('premium_member_since_end') != 'all'){
+                if ($this->session->userdata('premium_member_since_end') == 'present') {
+                    $this->db->where('member_since_end', 'present');
+                } else {
+                    $this->db->where('member_since_end <=', $this->session->userdata('premium_member_since_end'));
+                    $this->db->where('member_since_end !=', 'present');
+                }
+            }
+
         }
         
         $query = $this->db->get_where("member", array("membership" => $membership))->result();
@@ -1374,9 +1392,18 @@ public function insert_legion($data) {
                     $this->db->not_like('profile_image', 'female_default.png');
                 }
             }
-            if(!empty($this->session->userdata('free_member_since')) && $this->session->userdata('free_member_since') != 'all'){
-                $this->db->like('member_since', $this->session->userdata('free_member_since'));
+            if(!empty($this->session->userdata('free_member_since_start')) && $this->session->userdata('free_member_since_start') != 'all'){
+                $this->db->where('member_since_start >=', $this->session->userdata('free_member_since_start'));
             }
+            if(!empty($this->session->userdata('free_member_since_end')) && $this->session->userdata('free_member_since_end') != 'all'){
+                if ($this->session->userdata('free_member_since_end') == 'present') {
+                    $this->db->where('member_since_end', 'present');
+                } else {
+                    $this->db->where('member_since_end <=', $this->session->userdata('free_member_since_end'));
+                    $this->db->where('member_since_end !=', 'present');
+                }
+            }
+
     
         } else if (!empty($this->session->userdata('premium_member_status_type')) && $member_type == 2) {
             if ($this->session->userdata('premium_member_status_type') == 'groom') {
@@ -1399,9 +1426,18 @@ public function insert_legion($data) {
                     $this->db->not_like('profile_image', 'female_default.png');
                 }
             }
-            if(!empty($this->session->userdata('premium_member_since')) && $this->session->userdata('premium_member_since') != 'all'){
-                $this->db->like('member_since', $this->session->userdata('premium_member_since'));
+            if(!empty($this->session->userdata('premium_member_since_start')) && $this->session->userdata('premium_member_since_start') != 'all'){
+                $this->db->where('member_since_start >=', $this->session->userdata('premium_member_since_start'));
             }
+            if(!empty($this->session->userdata('premium_member_since_end')) && $this->session->userdata('premium_member_since_end') != 'all'){
+                if ($this->session->userdata('premium_member_since_end') == 'present') {
+                    $this->db->where('member_since_end', 'present');
+                } else {
+                    $this->db->where('member_since_end <=', $this->session->userdata('premium_member_since_end'));
+                    $this->db->where('member_since_end !=', 'present');
+                }
+            }
+
         }
     
         // Step 4: Apply limit, offset, ordering
@@ -1603,9 +1639,18 @@ public function insert_legion($data) {
                     $this->db->not_like('profile_image', '"profile_image":"female_default.png"');
                 }           
             }
-            if(!empty($this->session->userdata('free_member_since')) && $this->session->userdata('free_member_since') != 'all'){
-                $this->db->like('member_since', $this->session->userdata('free_member_since'));
+            if(!empty($this->session->userdata('free_member_since_start')) && $this->session->userdata('free_member_since_start') != 'all'){
+                $this->db->where('member_since_start >=', $this->session->userdata('free_member_since_start'));
             }
+            if(!empty($this->session->userdata('free_member_since_end')) && $this->session->userdata('free_member_since_end') != 'all'){
+                if ($this->session->userdata('free_member_since_end') == 'present') {
+                    $this->db->where('member_since_end', 'present');
+                } else {
+                    $this->db->where('member_since_end <=', $this->session->userdata('free_member_since_end'));
+                    $this->db->where('member_since_end !=', 'present');
+                }
+            }
+
         }
         else if(!empty($this->session->userdata('premium_member_status_type')) && $membership == 2){
             if($this->session->userdata('premium_member_status_type') == 'groom'){
@@ -1628,9 +1673,18 @@ public function insert_legion($data) {
                     $this->db->not_like('profile_image', '"profile_image":"female_default.png"');
                 }           
             }
-            if(!empty($this->session->userdata('premium_member_since')) && $this->session->userdata('premium_member_since') != 'all'){
-                $this->db->like('member_since', $this->session->userdata('premium_member_since'));
+            if(!empty($this->session->userdata('premium_member_since_start')) && $this->session->userdata('premium_member_since_start') != 'all'){
+                $this->db->where('member_since_start >=', $this->session->userdata('premium_member_since_start'));
             }
+            if(!empty($this->session->userdata('premium_member_since_end')) && $this->session->userdata('premium_member_since_end') != 'all'){
+                if ($this->session->userdata('premium_member_since_end') == 'present') {
+                    $this->db->where('member_since_end', 'present');
+                } else {
+                    $this->db->where('member_since_end <=', $this->session->userdata('premium_member_since_end'));
+                    $this->db->where('member_since_end !=', 'present');
+                }
+            }
+
         }
         
         
@@ -1670,9 +1724,18 @@ public function insert_legion($data) {
                     $this->db->not_like('profile_image', '"profile_image":"female_default.png"');
                 }           
             }
-            if(!empty($this->session->userdata('free_member_since')) && $this->session->userdata('free_member_since') != 'all'){
-                $this->db->like('member_since', $this->session->userdata('free_member_since'));
+            if(!empty($this->session->userdata('free_member_since_start')) && $this->session->userdata('free_member_since_start') != 'all'){
+                $this->db->where('member_since_start >=', $this->session->userdata('free_member_since_start'));
             }
+            if(!empty($this->session->userdata('free_member_since_end')) && $this->session->userdata('free_member_since_end') != 'all'){
+                if ($this->session->userdata('free_member_since_end') == 'present') {
+                    $this->db->where('member_since_end', 'present');
+                } else {
+                    $this->db->where('member_since_end <=', $this->session->userdata('free_member_since_end'));
+                    $this->db->where('member_since_end !=', 'present');
+                }
+            }
+
         }
         else if(!empty($this->session->userdata('premium_member_status_type')) && $membership == 2){
             if($this->session->userdata('premium_member_status_type') == 'groom'){
@@ -1695,9 +1758,18 @@ public function insert_legion($data) {
                     $this->db->not_like('profile_image', '"profile_image":"female_default.png"');
                 }           
             }
-            if(!empty($this->session->userdata('premium_member_since')) && $this->session->userdata('premium_member_since') != 'all'){
-                $this->db->like('member_since', $this->session->userdata('premium_member_since'));
+            if(!empty($this->session->userdata('premium_member_since_start')) && $this->session->userdata('premium_member_since_start') != 'all'){
+                $this->db->where('member_since_start >=', $this->session->userdata('premium_member_since_start'));
             }
+            if(!empty($this->session->userdata('premium_member_since_end')) && $this->session->userdata('premium_member_since_end') != 'all'){
+                if ($this->session->userdata('premium_member_since_end') == 'present') {
+                    $this->db->where('member_since_end', 'present');
+                } else {
+                    $this->db->where('member_since_end <=', $this->session->userdata('premium_member_since_end'));
+                    $this->db->where('member_since_end !=', 'present');
+                }
+            }
+
         }
         
         $this->db->where('membership',$membership);

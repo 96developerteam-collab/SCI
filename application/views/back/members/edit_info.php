@@ -134,7 +134,7 @@
                 </div>
 
                 <div class="row">
-                  <div class="col-md-12">
+                  <div class="col-md-6">
                     <div class="form-group has-feedback">
                         <label for="membership" class="text-uppercase c-gray-light"><?php echo translate('membership_type')?><span class="text-danger">*</span></label>
                         <select class="form-control form-control-sm selectpicker" name="membership">
@@ -148,7 +148,39 @@
                         <div class="help-block with-errors"></div>
                     </div>
                   </div>
+                  <div class="col-md-3">
+                    <div class="form-group has-feedback">
+                        <label for="member_since_start" class="text-uppercase c-gray-light"><?php echo translate('member_since_start')?><span class="text-danger">*</span></label>
+                        <select name="member_since_start" class="form-control form-control-sm selectpicker" required>
+                            <option value=""><?= translate('start_year') ?></option>
+                            <?php 
+                                $current_year = date('Y');
+                                for ($i = $current_year; $i >= 1975; $i--) {
+                                    $sel = ($value->member_since_start == $i) ? 'selected' : '';
+                                    echo '<option value="'.$i.'" '.$sel.'>'.$i.'</option>';
+                                }
+                            ?>
+                        </select>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="form-group has-feedback">
+                        <label for="member_since_end" class="text-uppercase c-gray-light"><?php echo translate('member_since_end')?><span class="text-danger">*</span></label>
+                        <select name="member_since_end" class="form-control form-control-sm selectpicker" required>
+                            <option value=""><?= translate('end_year') ?></option>
+                            <option value="present" <?php if($value->member_since_end == 'present') echo 'selected'; ?>><?= translate('present') ?></option>
+                            <?php 
+                                $current_year = date('Y');
+                                for ($i = $current_year; $i >= 1975; $i--) {
+                                    $sel = ($value->member_since_end == $i) ? 'selected' : '';
+                                    echo '<option value="'.$i.'" '.$sel.'>'.$i.'</option>';
+                                }
+                            ?>
+                        </select>
+                    </div>
+                  </div>
                 </div>
+
 
                 <div class="row">
                     <div class="col-md-6">

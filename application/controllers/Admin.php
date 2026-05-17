@@ -829,9 +829,11 @@ public function add_member() {
 					$this->session->set_userdata("{$type}_member_status_type", $_POST["{$type}_member_gender"]);
 					$this->session->set_userdata("{$type}_filter_status", $_POST["{$type}_filter_status"]);
 					$this->session->set_userdata("{$type}_member_profile_image", $_POST["{$type}_member_profile_image"]);
-					$this->session->set_userdata("{$type}_member_since", $_POST["{$type}_member_since"]);
+					$this->session->set_userdata("{$type}_member_since_start", $_POST["{$type}_member_since_start"]);
+					$this->session->set_userdata("{$type}_member_since_end", $_POST["{$type}_member_since_end"]);
 				}
 			}
+
 
 
 			$member_approval = $this->db->get_where('general_settings', array('type' => 'member_approval_by_admin'))->row()->value;
@@ -2234,8 +2236,10 @@ public function add_member() {
 						$data['membership'] = $this->input->post('membership');
 						$data['profile_status'] = 1;
 						$data['is_closed'] = 'no';
-						$member_since_year = $this->input->post('member_since');
-						$data['member_since'] = $member_since_year . "-01-01 00:00:00";
+						$data['member_since_start'] = $this->input->post('member_since_start');
+						$data['member_since_end'] = $this->input->post('member_since_end');
+						$data['member_since'] = $data['member_since_start'] . " to " . $data['member_since_end'];
+
 						$data['express_interest'] = $this->db->get_where('plan', array('plan_id' => $plan))->row()->express_interest;
 						$data['direct_messages'] = $this->db->get_where('plan', array('plan_id' => $plan))->row()->direct_messages;
 						$data['photo_gallery'] = $this->db->get_where('plan', array('plan_id' => $plan))->row()->photo_gallery;
@@ -2413,7 +2417,12 @@ public function add_member() {
 					$data['height'] = $this->input->post('height');
 					$data['introduction'] = $this->input->post('introduction');
 					$data['percentage'] = $this->input->post('percentage') ;
+					$data['member_since_start'] = $this->input->post('member_since_start');
+					$data['member_since_end'] = $this->input->post('member_since_end');
+					$data['member_since'] = $data['member_since_start'] . " to " . $data['member_since_end'];
+
 					// ------------------------------------Basic Info------------------------------------ //
+
 					$basic_info[] = array(
 						'marital_status'		=>	$this->input->post('marital_status'),
 						'number_of_children'	=>	$this->input->post('number_of_children'),

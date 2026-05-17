@@ -235,14 +235,28 @@
                     </div>
                 </div>
                 <div class="row text-center" style="margin-top: 10px;">
-                    <div class="col-md-4 col-md-offset-4">
+                    <div class="col-md-8 col-md-offset-2">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label" style="margin-top: 7px;"><?= translate('member_since') ?></label>
-                            <div class="col-sm-8">
-                                <select name="free_member_since" class="form-control selectpicker" onchange="this.form.submit()">
-                                    <option value="all"><?= translate('all_years') ?></option>
+                            <label class="col-sm-3 control-label" style="margin-top: 7px;"><?= translate('member_since') ?></label>
+                            <div class="col-sm-4">
+                                <select name="free_member_since_start" class="form-control selectpicker" onchange="this.form.submit()">
+                                    <option value="all"><?= translate('start_year') ?></option>
                                     <?php 
-                                        $selected_year = $this->session->userdata('free_member_since');
+                                        $selected_year = $this->session->userdata('free_member_since_start');
+                                        $current_year = date('Y');
+                                        for ($i = $current_year; $i >= 1975; $i--) {
+                                            $sel = ($selected_year == $i) ? 'selected' : '';
+                                            echo '<option value="'.$i.'" '.$sel.'>'.$i.'</option>';
+                                        }
+                                    ?>
+                                </select>
+                            </div>
+                            <div class="col-sm-4">
+                                <select name="free_member_since_end" class="form-control selectpicker" onchange="this.form.submit()">
+                                    <option value="all"><?= translate('end_year') ?></option>
+                                    <option value="present" <?= ($this->session->userdata('free_member_since_end') == 'present') ? 'selected' : '' ?>><?= translate('present') ?></option>
+                                    <?php 
+                                        $selected_year = $this->session->userdata('free_member_since_end');
                                         $current_year = date('Y');
                                         for ($i = $current_year; $i >= 1975; $i--) {
                                             $sel = ($selected_year == $i) ? 'selected' : '';
@@ -345,14 +359,28 @@
 
                 </div>
                 <div class="row text-center" style="margin-top: 10px;">
-                    <div class="col-md-4 col-md-offset-4">
+                    <div class="col-md-8 col-md-offset-2">
                         <div class="form-group">
-                            <label class="col-sm-4 control-label" style="margin-top: 7px;"><?= translate('member_since') ?></label>
-                            <div class="col-sm-8">
-                                <select name="premium_member_since" class="form-control selectpicker" onchange="this.form.submit()">
-                                    <option value="all"><?= translate('all_years') ?></option>
+                            <label class="col-sm-3 control-label" style="margin-top: 7px;"><?= translate('member_since') ?></label>
+                            <div class="col-sm-4">
+                                <select name="premium_member_since_start" class="form-control selectpicker" onchange="this.form.submit()">
+                                    <option value="all"><?= translate('start_year') ?></option>
                                     <?php 
-                                        $selected_year = $this->session->userdata('premium_member_since');
+                                        $selected_year = $this->session->userdata('premium_member_since_start');
+                                        $current_year = date('Y');
+                                        for ($i = $current_year; $i >= 1975; $i--) {
+                                            $sel = ($selected_year == $i) ? 'selected' : '';
+                                            echo '<option value="'.$i.'" '.$sel.'>'.$i.'</option>';
+                                        }
+                                    ?>
+                                </select>
+                            </div>
+                            <div class="col-sm-4">
+                                <select name="premium_member_since_end" class="form-control selectpicker" onchange="this.form.submit()">
+                                    <option value="all"><?= translate('end_year') ?></option>
+                                    <option value="present" <?= ($this->session->userdata('premium_member_since_end') == 'present') ? 'selected' : '' ?>><?= translate('present') ?></option>
+                                    <?php 
+                                        $selected_year = $this->session->userdata('premium_member_since_end');
                                         $current_year = date('Y');
                                         for ($i = $current_year; $i >= 1975; $i--) {
                                             $sel = ($selected_year == $i) ? 'selected' : '';
