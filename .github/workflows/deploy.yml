@@ -1,9 +1,9 @@
-name: Deploy to Server
+name: Deploy to Demo Server
 
 on:
   push:
     branches:
-      - main
+      - test
 
 jobs:
   deploy:
@@ -13,7 +13,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Deploy to Server
+      - name: Deploy to Demo Server
         uses: easingthemes/ssh-deploy@main
         env:
           # SSH Private Key (You mentioned you have a public key, but GitHub Actions needs the PRIVATE key, 

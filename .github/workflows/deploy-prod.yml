@@ -1,0 +1,29 @@
+name: Deploy to Production Server
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: 
+      - closed 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to Production Server
+        uses: easingthemes/ssh-deploy@main
+        env:
+          # SSH Private Key (You mentioned you have a public key, but GitHub Actions needs the PRIVATE key, 
+          # while the PUBLIC key should be placed in the server's ~/.ssh/authorized_keys file)
+          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
+          ARGS: "-rlgoDzvc -i --delete"
+          SOURCE: "/"
+          REMOTE_HOST: ${{ secrets.SERVER_HOST }}
+          REMOTE_USER: ${{ secrets.SERVER_USERNAME }}
+          TARGET: "/home/ztakzvxv/public_html"
+          EXCLUDE: "/.git/, /.github/"
