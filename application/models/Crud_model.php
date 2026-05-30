@@ -1295,6 +1295,7 @@ public function insert_legion($data) {
 
         }
         
+        $this->_apply_admin_legion_scope();
         $query = $this->db->get_where("member", array("membership" => $membership))->result();
         return count($query);
     }
@@ -1315,34 +1316,28 @@ public function insert_legion($data) {
     //     }
     // }
 
+    private function _apply_admin_legion_scope() {
+        $admin_id = $this->session->userdata('admin_id');
+        if ($admin_id != 1) {
+            $this->db->select('legion_id');
+            $admin_query = $this->db->get_where('admin', ['admin_id' => $admin_id]);
+            
+            if ($admin_query->num_rows() > 0) {
+                $admin_data = $admin_query->row();
+                if (!empty($admin_data->legion_id)) {
+                    $this->db->where('member.legion_id', $admin_data->legion_id);
+                } else {
+                    $this->db->where('1=0');
+                }
+            } else {
+                $this->db->where('1=0');
+            }
+        }
+    }
+
     public function get_members_by_admin_scope($member_type, $limit, $start, $order, $dir, $admin_id)
     {
-
-
-        if ($admin_id != 1) {
-            $this->db->select('area_id');
-            $area_query = $this->db->get_where('admin_area', ['admin_id' => $admin_id]);
-        
-            if ($area_query->num_rows() > 0) {
-                // Admin has assigned areas
-                $area_ids = array_column($area_query->result_array(), 'area_id');
-                $this->db->where_in('area_id', $area_ids);
-            } else {
-                // Step 2: Check admin_legions
-                $this->db->select('legion_id');
-                $legion_query = $this->db->get_where('admin_legion', ['admin_id' => $admin_id]);
-        
-                if ($legion_query->num_rows() > 0) {
-                    $legion_ids = array_column($legion_query->result_array(), 'legion_id');
-                    $this->db->where_in('legion_id', $legion_ids);
-                } else {
-                    // No area or legion found for this admin, return empty result
-                    log_message('info', "No areas or legions found for admin_id: {$admin_id}. Returning empty result.");
-                    return [];
-                }
-            }
-        
-        }
+        $this->_apply_admin_legion_scope();
         // // Step 1: Check admin_areas
         // $this->db->select('area_id');
         // $area_query = $this->db->get_where('admin_area', ['admin_id' => $admin_id]);
@@ -1688,6 +1683,7 @@ public function insert_legion($data) {
         }
         
         
+        $this->_apply_admin_legion_scope();
         $query = $this->db->get('member');
 
         if($query->num_rows()>0)
@@ -1783,6 +1779,7 @@ public function insert_legion($data) {
         $this->db->group_end();
 
         // $this->db->where("(member_id LIKE '%$search%' OR first_name LIKE '%$search%' OR last_name LIKE '%$search%' OR member_profile_id LIKE '%$search%')");
+        $this->_apply_admin_legion_scope();
         $query = $this->db->get('member');
 
         return $query->num_rows();

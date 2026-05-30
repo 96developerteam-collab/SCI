@@ -27,11 +27,24 @@ class Pdf
 
     public function __construct()
     {
+        // Create local temp directory if it doesn't exist
+        $localTempDir = FCPATH . 'tmp/';
+        if (!file_exists($localTempDir)) {
+            mkdir($localTempDir, 0777, true);
+        }
+        
+        // Create ttfontdata subdirectory for font cache
+        $fontCacheDir = $localTempDir . 'ttfontdata/';
+        if (!file_exists($fontCacheDir)) {
+            mkdir($fontCacheDir, 0777, true);
+        }
+        
+        // Simplified config - let mPDF handle fonts automatically
         $this->mpdf = new CustomMpdf([
             'mode' => 'utf-8', 
             'format' => 'A4', 
             'orientation' => 'P',
-            'tempDir' => sys_get_temp_dir(),
+            'tempDir' => $localTempDir,
             'margin_left' => 15,
             'margin_right' => 15,
             'margin_top' => 15,
@@ -57,4 +70,3 @@ class Pdf
         }
     }
 }
-

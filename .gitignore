@@ -13,3 +13,4 @@ application/cache/
 docs
 .agent
 graphify-out
+tmp/*
